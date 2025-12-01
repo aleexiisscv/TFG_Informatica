@@ -13,7 +13,7 @@ const char* hostname = "ESP32Frigorifico";  // Nombre del dispositivo
 const char* MQTT_BROKER_ADDRESS = "192.168.116.180";  // Cambia la IP por la de tu broker
 const uint16_t MQTT_PORT = 1883;  // Puerto del broker MQTT
 const char* MQTT_CLIENT_NAME = "ESP32Cliente";  // Nombre del cliente MQTT
-
+//pruebaaa sync
 
 #endif // CONFIG_H
 
