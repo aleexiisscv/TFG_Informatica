@@ -1,0 +1,45 @@
+[versions]
+agp = "8.7.3"
+glassyJndi = "1.0"
+gson = "2.10.1"
+hikaricp = "4.0.3"
+jakartaServletApi = "6.0.0"
+jettyServer = "11.0.15"
+junit = "4.13.2"
+junitVersion = "1.1.5"
+espressoCore = "3.5.1"
+appcompat = "1.6.1"
+logbackAndroid = "2.0.0"
+mariadbJavaClient = "3.1.4"
+material = "1.10.0"
+activity = "1.8.0"
+constraintlayout = "2.1.4"
+mysqlConnectorJava = "8.0.33"
+naming = "1.0.1"
+orgEclipsePahoAndroidService = "1.1.1"
+orgEclipsePahoClientMqttv3 = "1.2.5"
+okhttp = "4.9.0"
+[libraries]
+okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
+glassy-jndi = { module = "org.glassfish.jndi:glassy-jndi", version.ref = "glassyJndi" }
+gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
+hikaricp = { module = "com.zaxxer:HikariCP", version.ref = "hikaricp" }
+jakarta-servlet-api = { module = "jakarta.servlet:jakarta.servlet-api", version.ref = "jakartaServletApi" }
+jetty-server = { module = "org.eclipse.jetty:jetty-server", version.ref = "jettyServer" }
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
+espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
+appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+logback-android = { module = "com.github.tony19:logback-android", version.ref = "logbackAndroid" }
+mariadb-java-client = { module = "org.mariadb.jdbc:mariadb-java-client", version.ref = "mariadbJavaClient" }
+material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
+constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
+mysql-connector-java = { module = "mysql:mysql-connector-java", version.ref = "mysqlConnectorJava" }
+naming = { module = "javax.naming:naming", version.ref = "naming" }
+org-eclipse-paho-android-service = { module = "org.eclipse.paho:org.eclipse.paho.android.service", version.ref = "orgEclipsePahoAndroidService" }
+org-eclipse-paho-client-mqttv3 = { module = "org.eclipse.paho:org.eclipse.paho.client.mqttv3", version.ref = "orgEclipsePahoClientMqttv3" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+

@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="0dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:layout_marginBottom="60dp">
+
+            <!-- Botón para calcular estadísticas -->
+            <Button
+                android:id="@+id/calculateButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="40dp"
+                android:layout_marginBottom="100dp"
+                android:text="Insertar fecha para cálculo de estadísticas" />
+
+            <!-- Resultados estadísticos -->
+            <TextView
+                android:id="@+id/textViewResultados"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:text="Resultados de Estadísticas"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <!-- Estadísticas de alimentación -->
+            <TextView
+                android:id="@+id/healthyEatingStats"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:text="Nutri-Scores"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <!-- Estadísticas de alimentación -->
+            <TextView
+                android:id="@+id/nutriScoreStats"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="30dp"
+                android:text="" />
+
+            <!-- Estadísticas de alertas de temperatura -->
+            <TextView
+                android:id="@+id/temperatureAlertsStats"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:text="Alertas de Temperatura"
+                android:textSize="18sp"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:id="@+id/tempAlertsStats"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="30dp"
+                android:text="" />
+
+            <!-- Estadísticas de alertas de agua -->
+            <TextView
+                android:id="@+id/waterAlertsStats"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Alertas de Agua"
+                android:textSize="18sp"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:id="@+id/waterAlertsCount"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="30dp"
+                android:text="" />
+
+            <Button
+                android:id="@+id/backButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:text="Volver" />
+        </LinearLayout>
+    </ScrollView>
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,12 @@
+db\ConnectionDB.class
+logic\Projectinitializer.class
+logic\Usuario.class
+servlets\DatabaseServlet.class
+mqtt\MQTTPublisher.class
+mqtt\MQTTBroker.class
+servlets\UsuarioServlet.class
+logic\Log.class
+mqtt\MQTTSuscriber.class
+logic\Producto.class
+servlets\ProductoServlet.class
+servlets\CambiarModoServlet.class
