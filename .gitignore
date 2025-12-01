@@ -1,0 +1,48 @@
+# --- Global / Sistema Operativo ---
+.DS_Store
+Thumbs.db
+*.log
+
+# --- IDEs y Editores (VS Code, IntelliJ, Eclipse) ---
+.vscode/
+.idea/
+*.iml
+*.iws
+*.ipr
+*.classpath
+*.project
+*.settings/
+*.code-workspace
+
+# --- MÓDULO 1: ARDUINO / ESP32 (Firmware) ---
+# Ignorar salidas de compilación de Arduino
+**/*.hex
+**/*.elf
+**/*.bin
+**/*.map
+**/*.d
+**/*.o
+# Si usas PlatformIO en el futuro
+.pio/
+
+# --- MÓDULO 2: BACKEND JAVA (Maven) ---
+# Ignorar la carpeta target donde Maven construye el .war/.jar
+**/target/
+ServerSmarfridge_entregable/target/
+# Archivos compilados java por si acaso
+*.class
+
+# --- MÓDULO 3: ANDROID (Gradle) ---
+# Ignorar carpetas de construcción masivas
+**/build/
+SmartFridge_ANDROID/app/build/
+.gradle/
+# Archivos de configuración local (IMPORTANTE: contienen rutas de tu PC)
+local.properties
+# Capturas de errores y análisis nativos
+captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+*.ap_
+
