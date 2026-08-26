@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Ilustracion del estado de error de red, distinta de la de estado
+     vacio: el usuario debe poder distinguir "no hay nada" de "no he
+     podido preguntar". -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="96dp" android:height="96dp"
+    android:viewportWidth="96" android:viewportHeight="96">
+    <path android:pathData="M28,68h38a14,14 0 0 0 1.5,-27.9A20,20 0 0 0 30,33"
+        android:fillColor="#00000000" android:strokeColor="#FF000000"
+        android:strokeWidth="3" android:strokeLineCap="round"/>
+    <path android:pathData="M28,68a13,13 0 0 1 -1.5,-25.9"
+        android:fillColor="#00000000" android:strokeColor="#FF000000"
+        android:strokeWidth="3" android:strokeLineCap="round"/>
+    <path android:pathData="M20,20 76,76" android:strokeColor="#FF000000"
+        android:strokeWidth="3.5" android:strokeLineCap="round"/>
+</vector>

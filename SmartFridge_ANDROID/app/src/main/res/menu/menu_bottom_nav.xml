@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    IMPORTANTE: los android:id de este menu coinciden EXACTAMENTE con
+    los id de los destinos de nav_graph.xml. Es el contrato que permite
+    a NavigationUI.setupWithNavController(bottomNav, navController)
+    enlazar barra y grafo sin una sola linea de listener manual: cada
+    pulsacion navega, y la seleccion de la barra se sincroniza sola con
+    el back stack.
+-->
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/dashboardFragment"
+        android:icon="@drawable/ic_inventory_24"
+        android:title="@string/nav_dashboard" />
+    <item
+        android:id="@+id/sensoresFragment"
+        android:icon="@drawable/ic_sensors_24"
+        android:title="@string/nav_sensors" />
+    <item
+        android:id="@+id/asistenteFragment"
+        android:icon="@drawable/ic_assistant_24"
+        android:title="@string/nav_assistant" />
+</menu>

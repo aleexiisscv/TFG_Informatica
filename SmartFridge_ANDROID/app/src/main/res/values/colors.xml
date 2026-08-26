@@ -1,5 +1,115 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Paleta de respaldo (fallback) del esquema Material 3.
+
+    Se usa cuando NO hay Dynamic Color disponible: dispositivos con
+    Android 11 o anterior (minSdk = 24), o Android 12+ con el color
+    dinamico desactivado. En Android 12+ SmartFridgeApp sobreescribe
+    estos roles con la paleta extraida del fondo de pantalla del
+    usuario (ver DynamicColors.applyToActivitiesIfAvailable).
+
+    Los roles siguen la nomenclatura oficial de M3 (primary /
+    onPrimary / primaryContainer / ...). Nunca se referencian colores
+    en bruto desde los layouts: los layouts usan atributos de tema
+    (?attr/colorPrimary), que es precisamente lo que permite que el
+    color dinamico funcione sin tocar un solo XML de layout.
+-->
 <resources>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+
+    <!-- ===== Esquema claro ===== -->
+    <color name="md_theme_light_primary">#006874</color>
+    <color name="md_theme_light_onPrimary">#FFFFFF</color>
+    <color name="md_theme_light_primaryContainer">#97F0FF</color>
+    <color name="md_theme_light_onPrimaryContainer">#001F24</color>
+    <color name="md_theme_light_secondary">#4A6267</color>
+    <color name="md_theme_light_onSecondary">#FFFFFF</color>
+    <color name="md_theme_light_secondaryContainer">#CDE7EC</color>
+    <color name="md_theme_light_onSecondaryContainer">#051F23</color>
+    <color name="md_theme_light_tertiary">#525E7D</color>
+    <color name="md_theme_light_onTertiary">#FFFFFF</color>
+    <color name="md_theme_light_tertiaryContainer">#DAE2FF</color>
+    <color name="md_theme_light_onTertiaryContainer">#0E1B37</color>
+    <color name="md_theme_light_error">#BA1A1A</color>
+    <color name="md_theme_light_onError">#FFFFFF</color>
+    <color name="md_theme_light_errorContainer">#FFDAD6</color>
+    <color name="md_theme_light_onErrorContainer">#410002</color>
+    <color name="md_theme_light_background">#FAFDFD</color>
+    <color name="md_theme_light_onBackground">#191C1D</color>
+    <color name="md_theme_light_surface">#FAFDFD</color>
+    <color name="md_theme_light_onSurface">#191C1D</color>
+    <color name="md_theme_light_surfaceVariant">#DBE4E6</color>
+    <color name="md_theme_light_onSurfaceVariant">#3F484A</color>
+    <color name="md_theme_light_outline">#6F797A</color>
+    <color name="md_theme_light_outlineVariant">#BFC8CA</color>
+    <color name="md_theme_light_inverseSurface">#2E3132</color>
+    <color name="md_theme_light_inverseOnSurface">#EFF1F1</color>
+    <color name="md_theme_light_inversePrimary">#4FD8EB</color>
+    <color name="md_theme_light_scrim">#000000</color>
+    <color name="md_theme_light_surfaceContainerLowest">#FFFFFF</color>
+    <color name="md_theme_light_surfaceContainerLow">#F4F7F7</color>
+    <color name="md_theme_light_surfaceContainer">#EEF1F2</color>
+    <color name="md_theme_light_surfaceContainerHigh">#E8EBEC</color>
+    <color name="md_theme_light_surfaceContainerHighest">#E2E6E6</color>
+
+    <!-- ===== Esquema oscuro ===== -->
+    <color name="md_theme_dark_primary">#4FD8EB</color>
+    <color name="md_theme_dark_onPrimary">#00363D</color>
+    <color name="md_theme_dark_primaryContainer">#004F58</color>
+    <color name="md_theme_dark_onPrimaryContainer">#97F0FF</color>
+    <color name="md_theme_dark_secondary">#B1CBD0</color>
+    <color name="md_theme_dark_onSecondary">#1C3438</color>
+    <color name="md_theme_dark_secondaryContainer">#334B4F</color>
+    <color name="md_theme_dark_onSecondaryContainer">#CDE7EC</color>
+    <color name="md_theme_dark_tertiary">#BAC6EA</color>
+    <color name="md_theme_dark_onTertiary">#24304D</color>
+    <color name="md_theme_dark_tertiaryContainer">#3A4664</color>
+    <color name="md_theme_dark_onTertiaryContainer">#DAE2FF</color>
+    <color name="md_theme_dark_error">#FFB4AB</color>
+    <color name="md_theme_dark_onError">#690005</color>
+    <color name="md_theme_dark_errorContainer">#93000A</color>
+    <color name="md_theme_dark_onErrorContainer">#FFDAD6</color>
+    <color name="md_theme_dark_background">#191C1D</color>
+    <color name="md_theme_dark_onBackground">#E1E3E3</color>
+    <color name="md_theme_dark_surface">#191C1D</color>
+    <color name="md_theme_dark_onSurface">#E1E3E3</color>
+    <color name="md_theme_dark_surfaceVariant">#3F484A</color>
+    <color name="md_theme_dark_onSurfaceVariant">#BFC8CA</color>
+    <color name="md_theme_dark_outline">#899294</color>
+    <color name="md_theme_dark_outlineVariant">#3F484A</color>
+    <color name="md_theme_dark_inverseSurface">#E1E3E3</color>
+    <color name="md_theme_dark_inverseOnSurface">#191C1D</color>
+    <color name="md_theme_dark_inversePrimary">#006874</color>
+    <color name="md_theme_dark_scrim">#000000</color>
+    <color name="md_theme_dark_surfaceContainerLowest">#0B0F10</color>
+    <color name="md_theme_dark_surfaceContainerLow">#191C1D</color>
+    <color name="md_theme_dark_surfaceContainer">#1D2021</color>
+    <color name="md_theme_dark_surfaceContainerHigh">#272B2B</color>
+    <color name="md_theme_dark_surfaceContainerHighest">#323536</color>
+
+    <!--
+        ===== Colores de DOMINIO =====
+        Deliberadamente FUERA del esquema M3 y por tanto inmunes al
+        color dinamico: el Nutri-Score es un codigo de color normativo
+        (Reglamento (UE) 1169/2011, escala Nutri-Score oficial). Si el
+        fondo de pantalla del usuario tinera la "A" de morado, el
+        indicador dejaria de ser legible como informacion nutricional.
+        Semantica > estetica.
+    -->
+    <color name="nutri_a">#038141</color>
+    <color name="nutri_b">#85BB2F</color>
+    <color name="nutri_c">#FECB02</color>
+    <color name="nutri_d">#EE8100</color>
+    <color name="nutri_e">#E63E11</color>
+    <color name="nutri_on_light">#FFFFFF</color>
+    <color name="nutri_on_dark">#1A1A1A</color>
+    <color name="nutri_unknown">#8A9294</color>
+
+    <!-- Estado de sensor: verde/ambar/rojo son convenciones de alarma
+         industrial; tampoco se delegan al color dinamico. -->
+    <color name="state_ok">#2E7D32</color>
+    <color name="state_ok_container">#C8E6C9</color>
+    <color name="state_warn">#B26A00</color>
+    <color name="state_warn_container">#FFE0B2</color>
+    <color name="state_alert">#C62828</color>
+    <color name="state_alert_container">#FFCDD2</color>
 </resources>

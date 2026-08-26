@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Estilos de componente. Objetivo: que ningun layout repita
+    app:cardCornerRadius / app:cardElevation / textAppearance. Un
+    cambio de radio o de elevacion se hace en UN sitio y se propaga a
+    toda la app (principio DRY aplicado a recursos, y el equivalente en
+    Android del "Open/Closed" de SOLID: las pantallas se extienden sin
+    modificar su definicion visual base).
+-->
+<resources>
+
+    <!-- Tarjeta estandar: rellena (filled), sin sombra. M3 prefiere
+         jerarquia por tono de superficie antes que por sombra. -->
+    <style name="Widget.SmartFridge.Card" parent="Widget.Material3.CardView.Filled">
+        <item name="cardCornerRadius">@dimen/card_corner</item>
+        <item name="cardElevation">0dp</item>
+        <item name="cardBackgroundColor">?attr/colorSurfaceContainer</item>
+    </style>
+
+    <!-- Tarjeta de sensor: mismo lenguaje, esquina algo menor porque
+         va en rejilla y las esquinas grandes comen area util. -->
+    <style name="Widget.SmartFridge.Card.Sensor">
+        <item name="cardCornerRadius">@dimen/card_corner_small</item>
+        <item name="cardBackgroundColor">?attr/colorSurfaceContainerHigh</item>
+    </style>
+
+    <!-- Tarjeta con contorno: se reserva para bloques de IA, para que
+         el usuario distinga de un vistazo el dato medido (relleno) del
+         dato inferido por un modelo (contorno). -->
+    <style name="Widget.SmartFridge.Card.Outlined" parent="Widget.Material3.CardView.Outlined">
+        <item name="cardCornerRadius">@dimen/card_corner</item>
+        <item name="strokeColor">?attr/colorOutlineVariant</item>
+    </style>
+
+    <style name="Widget.SmartFridge.TextInputLayout" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+        <item name="boxCornerRadiusTopStart">@dimen/space_m</item>
+        <item name="boxCornerRadiusTopEnd">@dimen/space_m</item>
+        <item name="boxCornerRadiusBottomStart">@dimen/space_m</item>
+        <item name="boxCornerRadiusBottomEnd">@dimen/space_m</item>
+        <item name="android:layout_marginBottom">@dimen/space_m</item>
+    </style>
+
+    <style name="Widget.SmartFridge.Button" parent="Widget.Material3.Button">
+        <item name="android:minHeight">56dp</item>
+        <item name="android:textAppearance">?attr/textAppearanceLabelLarge</item>
+    </style>
+
+    <style name="Widget.SmartFridge.Button.Text" parent="Widget.Material3.Button.TextButton" />
+
+    <style name="TextAppearance.SmartFridge.SectionTitle" parent="TextAppearance.Material3.TitleMedium">
+        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
+        <item name="android:letterSpacing">0.04</item>
+    </style>
+
+    <style name="TextAppearance.SmartFridge.Metric" parent="TextAppearance.Material3.HeadlineSmall">
+        <item name="android:textColor">?attr/colorOnSurface</item>
+    </style>
+</resources>

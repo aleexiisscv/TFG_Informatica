@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Grafo de navegacion de las TRES secciones principales.
+
+    Decision de arquitectura (justificable en la memoria): el sistema
+    heredado saltaba entre Activities con startActivity() + finish(),
+    lo que (a) destruia y recreaba toda la jerarquia de vistas en cada
+    salto, (b) obligaba a replicar la barra inferior en cada pantalla y
+    (c) hacia que el boton "atras" del sistema tuviera un comportamiento
+    impredecible. Con un unico NavHost las tres secciones comparten
+    Activity, la barra inferior es persistente y el back stack lo
+    gestiona el propio Navigation Component.
+
+    Las pantallas SECUNDARIAS (login, alta de producto, estadisticas,
+    escaneo) siguen siendo Activities a proposito: son flujos de
+    entrada/salida que NO deben mostrar la barra inferior.
+-->
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/dashboardFragment">
+
+    <fragment
+        android:id="@+id/dashboardFragment"
+        android:name="com.example.smartfridge.ui.dashboard.DashboardFragment"
+        android:label="@string/nav_dashboard"
+        tools:layout="@layout/fragment_dashboard"
+        xmlns:tools="http://schemas.android.com/tools" />
+
+    <fragment
+        android:id="@+id/sensoresFragment"
+        android:name="com.example.smartfridge.ui.sensores.SensoresFragment"
+        android:label="@string/nav_sensors"
+        tools:layout="@layout/fragment_sensores"
+        xmlns:tools="http://schemas.android.com/tools" />
+
+    <fragment
+        android:id="@+id/asistenteFragment"
+        android:name="com.example.smartfridge.ui.asistente.AsistenteFragment"
+        android:label="@string/nav_assistant"
+        tools:layout="@layout/fragment_asistente"
+        xmlns:tools="http://schemas.android.com/tools" />
+</navigation>

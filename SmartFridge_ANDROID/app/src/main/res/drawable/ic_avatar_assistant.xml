@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Avatar de RESPALDO del asistente.
+
+    La pantalla del asistente muestra por defecto este vector y, si en
+    tiempo de ejecucion encuentra el fichero assets/assistant_avatar.json,
+    lo sustituye por la animacion Lottie. De este modo la app nunca
+    aparece con un hueco vacio si la animacion falta o esta corrupta
+    (patron de degradacion elegante).
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="120dp" android:height="120dp"
+    android:viewportWidth="120" android:viewportHeight="120">
+    <path android:pathData="M60,10a50,50 0 1 0 0.01,0"
+        android:fillColor="#00000000" android:strokeColor="#FF000000"
+        android:strokeWidth="3" android:strokeAlpha="0.35"/>
+    <path android:pathData="M60,22a38,38 0 1 0 0.01,0"
+        android:fillColor="#00000000" android:strokeColor="#FF000000"
+        android:strokeWidth="2" android:strokeAlpha="0.2"/>
+    <path
+        android:pathData="M60,32l5.2,14.8 14.8,5.2 -14.8,5.2 -5.2,14.8 -5.2,-14.8 -14.8,-5.2 14.8,-5.2z"
+        android:fillColor="#FF000000"/>
+    <path
+        android:pathData="M80,72l2.4,6.6 6.6,2.4 -6.6,2.4 -2.4,6.6 -2.4,-6.6 -6.6,-2.4 6.6,-2.4z"
+        android:fillColor="#FF000000" android:fillAlpha="0.55"/>
+    <path
+        android:pathData="M38,74l1.8,5 5,1.8 -5,1.8 -1.8,5 -1.8,-5 -5,-1.8 5,-1.8z"
+        android:fillColor="#FF000000" android:fillAlpha="0.35"/>
+</vector>

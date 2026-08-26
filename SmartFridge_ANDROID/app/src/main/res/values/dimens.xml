@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Escala de espaciado de 4dp (la retícula base de Material 3). Tener
+    los valores centralizados evita el problema del codigo heredado:
+    margenes arbitrarios (114dp, 286dp, 137dp...) generados por el
+    editor visual, imposibles de mantener y que rompen en pantallas
+    distintas a la del emulador en que se dibujaron.
+-->
+<resources>
+    <dimen name="space_xs">4dp</dimen>
+    <dimen name="space_s">8dp</dimen>
+    <dimen name="space_m">16dp</dimen>
+    <dimen name="space_l">24dp</dimen>
+    <dimen name="space_xl">32dp</dimen>
+
+    <dimen name="screen_padding_h">16dp</dimen>
+    <dimen name="card_corner">20dp</dimen>
+    <dimen name="card_corner_small">16dp</dimen>
+    <dimen name="icon_size">24dp</dimen>
+    <dimen name="icon_size_large">32dp</dimen>
+    <dimen name="avatar_size">140dp</dimen>
+
+    <!-- Alto de la BottomNavigationView + holgura, para que el ultimo
+         item de una lista y el FAB no queden tapados por la barra. -->
+    <dimen name="list_bottom_inset">96dp</dimen>
+</resources>

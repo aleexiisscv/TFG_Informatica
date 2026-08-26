@@ -4,14 +4,31 @@ gson = "2.10.1"
 junit = "4.13.2"
 junitVersion = "1.1.5"
 espressoCore = "3.5.1"
-appcompat = "1.6.1"
-material = "1.10.0"
-activity = "1.8.0"
+# --- Subidas en la Fase de rediseño UI ---
+# appcompat 1.7.0: version alineada con compileSdk 34.
+appcompat = "1.7.0"
+# material 1.12.0: es la PRIMERA version que expone los roles de
+# superficie de Material 3 (colorSurfaceContainer, ...ContainerHigh,
+# ...ContainerHighest). El nuevo tema los usa para construir la
+# jerarquia por tono en lugar de por sombra, asi que bajar de 1.12.0
+# rompe themes.xml con "resource attr not found".
+material = "1.12.0"
+activity = "1.9.3"
+fragment = "1.8.5"
+# navigation 2.7.7: ultima linea 2.7.x, compatible con AGP 8.7 y
+# compileSdk 34, y sin exigir Kotlin en un proyecto Java.
+navigation = "2.7.7"
+recyclerview = "1.3.2"
+swiperefresh = "1.1.0"
 constraintlayout = "2.1.4"
+coordinatorlayout = "1.2.0"
+# lottie 6.x: soporta minSdk 21 y trae el failure listener que usa
+# AsistenteFragment para caer al avatar vectorial si el JSON falla.
+lottie = "6.4.0"
 orgEclipsePahoAndroidService = "1.1.1"
 orgEclipsePahoClientMqttv3 = "1.2.5"
-# Bumped de 4.9.0 a 4.12.0: es la versión mínima que trae Retrofit 3.0.0
-# como dependencia transitiva. Fijarla explícitamente evita que Gradle
+# Bumped de 4.9.0 a 4.12.0: es la version minima que trae Retrofit 3.0.0
+# como dependencia transitiva. Fijarla explicitamente evita que Gradle
 # tenga que resolver dos versiones distintas de OkHttp en el grafo de
 # dependencias.
 okhttp = "4.12.0"
@@ -29,24 +46,35 @@ activity = { group = "androidx.activity", name = "activity", version.ref = "acti
 constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 org-eclipse-paho-android-service = { module = "org.eclipse.paho:org.eclipse.paho.android.service", version.ref = "orgEclipsePahoAndroidService" }
 org-eclipse-paho-client-mqttv3 = { module = "org.eclipse.paho:org.eclipse.paho.client.mqttv3", version.ref = "orgEclipsePahoClientMqttv3" }
-# --- Nuevo en la Fase 5: cliente HTTP tipado para consumir el backend Spring Boot ---
+# --- Fase 5: cliente HTTP tipado para consumir el backend Spring Boot ---
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 retrofit-converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "retrofit" }
+# --- Fase de rediseño UI: navegacion, listas y animacion ---
+fragment = { group = "androidx.fragment", name = "fragment", version.ref = "fragment" }
+navigation-fragment = { group = "androidx.navigation", name = "navigation-fragment", version.ref = "navigation" }
+navigation-ui = { group = "androidx.navigation", name = "navigation-ui", version.ref = "navigation" }
+recyclerview = { group = "androidx.recyclerview", name = "recyclerview", version.ref = "recyclerview" }
+swiperefreshlayout = { group = "androidx.swiperefreshlayout", name = "swiperefreshlayout", version.ref = "swiperefresh" }
+coordinatorlayout = { group = "androidx.coordinatorlayout", name = "coordinatorlayout", version.ref = "coordinatorlayout" }
+lottie = { group = "com.airbnb.android", name = "lottie", version.ref = "lottie" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 
 # ------------------------------------------------------------------
-# RETIRADO en esta iteración (dead code / anti-patrón de seguridad):
+# RETIRADO en la Fase 5 (dead code / anti-patron de seguridad):
 # mysql-connector-java, mariadb-java-client, hikaricp, jakarta-servlet-api,
 # jetty-server, naming, glassy-jndi. Ninguna de las Activities activas del
-# paquete com.example.smartfridge las usa ya (el código que las
-# referenciaba —Android.Logic.*, Android.db.ConnectionDB— está muerto o
-# comentado). Su sola presencia implicaba que el APK llevaba, en teoría,
-# todo lo necesario para conectarse DIRECTAMENTE a la base de datos desde
-# el teléfono: credenciales embebidas, sin pasar por ninguna validación
-# de negocio. Si al recompilar ves un error de "cannot find symbol" en
-# algún archivo que no hemos tocado en esta fase, es señal de que ese
-# archivo SÍ dependía de alguna de estas librerías — antes de volver a
-# añadirlas, revisa si ese archivo también debería migrarse a Retrofit.
+# paquete com.example.smartfridge las usa ya. Su sola presencia implicaba
+# que el APK llevaba, en teoria, todo lo necesario para conectarse
+# DIRECTAMENTE a la base de datos desde el telefono: credenciales
+# embebidas, sin pasar por ninguna validacion de negocio.
+#
+# NOTA de la Fase de rediseño UI: las dependencias de Paho MQTT se
+# mantienen pero SIGUEN SIN USARSE desde la app. El unico consumidor
+# potencial era el switch de modo INSERTAR/ELIMINAR del dashboard, que
+# se ha eliminado por no estar conectado a nada. Recomendacion: si no se
+# decide publicar en frigorifico/modo desde el movil, retirarlas tambien
+# (ahorran ~200 KB de APK y una dependencia sin mantenimiento activo
+# desde 2019).
 # ------------------------------------------------------------------

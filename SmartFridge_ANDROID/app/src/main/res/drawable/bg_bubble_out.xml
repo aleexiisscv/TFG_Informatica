@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Burbuja del usuario: la esquina inferior derecha se "pincha" hacia
+     el borde de la pantalla, convencion universal de mensajeria para
+     indicar autoria propia. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="#FFFFFFFF" />
+    <corners android:topLeftRadius="20dp" android:topRightRadius="20dp"
+        android:bottomRightRadius="4dp" android:bottomLeftRadius="20dp" />
+</shape>

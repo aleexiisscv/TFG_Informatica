@@ -1,76 +1,128 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!--
+    Alta manual de producto.
+
+    El campo que antes se llamaba "Etiqueta RFID" pasa a llamarse
+    "Identificador del producto" con un texto de ayuda explicito: el
+    proyecto ha descartado el RFID como identificador fisico y ese
+    mismo campo sera, en la fase de IA, la CLASE que devuelva el modelo
+    de vision. Se mantiene el R.id "rfidTagInput" y el campo rfidTag
+    del DTO para no romper el contrato con el backend, que en esta
+    iteracion no se toca; el renombrado en ambas capas queda anotado
+    como trabajo futuro.
+-->
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <LinearLayout
+    <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent">
+        android:background="@android:color/transparent"
+        android:fitsSystemWindows="true"
+        app:elevation="0dp">
 
-        <!-- Título -->
-        <TextView
-            android:id="@+id/labelCreateProduct"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Crear Nuevo Producto"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="16dp" />
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:navigationContentDescription="@string/common_back"
+            app:navigationIcon="@drawable/ic_arrow_back_24"
+            app:title="@string/product_title" />
+    </com.google.android.material.appbar.AppBarLayout>
 
-        <!-- Campo RFID -->
-        <EditText
-            android:id="@+id/rfidTagInput"
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Etiqueta RFID"
-            android:layout_marginBottom="16dp" />
+            android:orientation="vertical"
+            android:padding="@dimen/space_l">
 
-        <!-- Campo Nombre -->
-        <EditText
-            android:id="@+id/nombreInput"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Nombre del Producto"
-            android:layout_marginBottom="16dp" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/space_l"
+                android:text="@string/product_subtitle"
+                android:textAppearance="?attr/textAppearanceBodyMedium"
+                android:textColor="?attr/colorOnSurfaceVariant" />
 
-        <!-- Campo Plazo de Caducidad -->
-        <EditText
-            android:id="@+id/plazoCaducidadInput"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Plazo de Caducidad (días)"
-            android:inputType="number"
-            android:layout_marginBottom="16dp" />
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/rfidTagLayout"
+                style="@style/Widget.SmartFridge.TextInputLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/product_id"
+                app:helperText="@string/product_id_helper"
+                app:helperTextEnabled="true"
+                app:startIconDrawable="@drawable/ic_ai_sparkle_24">
 
-        <!-- Campo NutriScore -->
-        <EditText
-            android:id="@+id/nutriScoreInput"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="NutriScore (A-E)"
-            android:layout_marginBottom="16dp" />
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/rfidTagInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="text" />
+            </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Botón de Registro -->
-        <Button
-            android:id="@+id/submitButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Registrar Producto"
-            android:backgroundTint="?attr/colorPrimary"
-            android:textColor="@android:color/white" />
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/nombreLayout"
+                style="@style/Widget.SmartFridge.TextInputLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/product_name">
 
-        <Button
-            android:id="@+id/backButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Volver"
-            android:backgroundTint="?attr/colorPrimary"
-            android:textColor="@android:color/white" />
-    </LinearLayout>
-</androidx.constraintlayout.widget.ConstraintLayout>
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/nombreInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textCapSentences" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/plazoCaducidadLayout"
+                style="@style/Widget.SmartFridge.TextInputLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/product_expiry_days"
+                app:suffixText="d">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/plazoCaducidadInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="number" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/nutriScoreLayout"
+                style="@style/Widget.SmartFridge.TextInputLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/product_nutriscore"
+                app:counterEnabled="true"
+                app:counterMaxLength="1">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/nutriScoreInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:imeOptions="actionDone"
+                    android:inputType="textCapCharacters"
+                    android:maxLength="1" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/submitButton"
+                style="@style/Widget.SmartFridge.Button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_s"
+                android:text="@string/product_save" />
+        </LinearLayout>
+    </ScrollView>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

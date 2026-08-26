@@ -1,4 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Todos los literales visibles viven aqui. En el codigo heredado
+    estaban incrustados en los layouts y en los Toast de las
+    Activities, lo que disparaba el aviso HardcodedText de Lint e
+    impedia (a) traducir la app y (b) revisar la terminologia de forma
+    centralizada. Extraerlos es requisito previo para cualquier
+    internacionalizacion futura (values-en/strings.xml).
+-->
 <resources>
     <string name="app_name">SmartFridge</string>
-    <string name="alert_bell_description">Descripción de la campana de alerta</string>
+
+    <!-- Navegacion -->
+    <string name="nav_dashboard">Inventario</string>
+    <string name="nav_sensors">Sensores</string>
+    <string name="nav_assistant">Asistente</string>
+
+    <!-- Arranque -->
+    <string name="splash_tagline">Tu frigorifico, con criterio</string>
+
+    <!-- Autenticacion -->
+    <string name="auth_welcome_title">Bienvenido de nuevo</string>
+    <string name="auth_welcome_subtitle">Accede para consultar tu frigorifico</string>
+    <string name="auth_register_title">Crea tu cuenta</string>
+    <string name="auth_register_subtitle">Solo necesitamos tres datos</string>
+    <string name="auth_email">Correo electronico</string>
+    <string name="auth_password">Contrasena</string>
+    <string name="auth_name">Nombre</string>
+    <string name="auth_login">Iniciar sesion</string>
+    <string name="auth_register">Crear cuenta</string>
+    <string name="auth_no_account">No tienes cuenta? Registrate</string>
+    <string name="auth_has_account">Ya tienes cuenta? Inicia sesion</string>
+    <string name="auth_error_empty">Rellena todos los campos</string>
+    <string name="auth_error_email">Introduce un correo valido</string>
+    <string name="auth_error_credentials">Correo o contrasena incorrectos</string>
+    <string name="auth_error_duplicate">No se pudo crear la cuenta (correo ya registrado?)</string>
+    <string name="auth_ok_registered">Cuenta creada. Ya puedes iniciar sesion</string>
+    <string name="auth_ok_login">Sesion iniciada</string>
+    <string name="auth_logout">Cerrar sesion</string>
+
+    <!-- Inventario -->
+    <string name="dashboard_title">Inventario</string>
+    <string name="dashboard_subtitle">Productos dentro del frigorifico</string>
+    <string name="dashboard_empty_title">El frigorifico esta vacio</string>
+    <string name="dashboard_empty_body">Anade productos escaneandolos con la camara o dandolos de alta manualmente.</string>
+    <string name="dashboard_error_title">Sin conexion con el servidor</string>
+    <string name="dashboard_error_body">Comprueba que el backend esta arrancado y que BASE_URL apunta a su IP.</string>
+    <string name="dashboard_retry">Reintentar</string>
+    <string name="dashboard_scan">Escanear producto</string>
+    <string name="dashboard_add_manual">Alta manual</string>
+    <string name="dashboard_stats">Estadisticas</string>
+    <string name="dashboard_count">%1$d productos</string>
+
+    <string name="item_expires_on">Caduca el %1$s</string>
+    <string name="item_expires_today">Caduca hoy</string>
+    <string name="item_expires_in">Caduca en %1$d dias</string>
+    <string name="item_expired">Caducado hace %1$d dias</string>
+    <string name="item_expiry_unknown">Sin fecha de caducidad</string>
+    <string name="item_nutriscore">Nutri-Score %1$s</string>
+    <string name="item_nutriscore_unknown">Sin Nutri-Score</string>
+
+    <!-- Sensores -->
+    <string name="sensors_title">Sensores y alertas</string>
+    <string name="sensors_subtitle">Estado en tiempo real del frigorifico</string>
+    <string name="sensor_temperature">Temperatura</string>
+    <string name="sensor_humidity">Humedad</string>
+    <string name="sensor_water">Fuga de agua</string>
+    <string name="sensor_door">Puerta</string>
+    <string name="sensor_no_data">--</string>
+    <string name="sensor_value_celsius">%1$s C</string>
+    <string name="sensor_value_percent">%1$s %%</string>
+    <string name="sensor_water_detected">Detectada</string>
+    <string name="sensor_water_clear">Sin agua</string>
+    <string name="sensor_door_open">Abierta</string>
+    <string name="sensor_door_closed">Cerrada</string>
+    <string name="sensor_updated_at">Ultima lectura: %1$s</string>
+    <string name="sensor_never_updated">Esperando lectura</string>
+    <string name="sensor_anomaly">Anomalia detectada por IA</string>
+
+    <string name="alerts_title">Alertas recientes</string>
+    <string name="alerts_empty">Sin alertas activas</string>
+    <string name="alert_water">Agua detectada: revisar el frigorifico</string>
+    <string name="alert_temperature">Temperatura fuera de rango</string>
+    <string name="alert_humidity">Humedad fuera de rango</string>
+    <string name="alert_door">Puerta abierta demasiado tiempo</string>
+    <string name="alert_generic">Alerta en el frigorifico</string>
+
+    <!-- Bloque reservado a IA -->
+    <string name="ai_panel_title">Analisis predictivo</string>
+    <string name="ai_panel_placeholder">Cuando el modelo de analitica este entrenado, aqui apareceran las predicciones de consumo y las anomalias detectadas sobre la serie temporal de lecturas.</string>
+
+    <!-- Asistente -->
+    <string name="assistant_title">Asistente</string>
+    <string name="assistant_greeting">Hola. Puedo consultarte el inventario, avisarte de caducidades y explicarte las alertas de los sensores. Que necesitas?</string>
+    <string name="assistant_hint">Escribe tu consulta</string>
+    <string name="assistant_send">Enviar</string>
+    <string name="assistant_mic">Dictar por voz</string>
+    <string name="assistant_listening">Escuchando…</string>
+    <string name="assistant_no_speech">El dictado por voz no esta disponible en este dispositivo</string>
+    <string name="assistant_not_wired">Aun no hay modelo conectado. Esta pantalla ya envia y pinta mensajes: falta enchufar el endpoint del backend.</string>
+    <string name="assistant_avatar_desc">Avatar del asistente</string>
+
+    <!-- Escaneo -->
+    <string name="scan_title">Escanear producto</string>
+    <string name="scan_explanation">Apunta al producto. La camara del movil actua como respaldo de la camara Edge AI del frigorifico.</string>
+    <string name="scan_open_camera">Abrir camara</string>
+    <string name="scan_retake">Repetir foto</string>
+    <string name="scan_confirm">Usar esta imagen</string>
+    <string name="scan_preview_desc">Vista previa de la captura</string>
+    <string name="scan_no_camera">Este dispositivo no tiene camara disponible</string>
+    <string name="scan_pending_model">Imagen capturada. La clasificacion automatica se activara cuando el modelo de vision este integrado.</string>
+
+    <!-- Alta manual de producto -->
+    <string name="product_title">Nuevo producto</string>
+    <string name="product_subtitle">Da de alta un producto en el catalogo</string>
+    <string name="product_id">Identificador del producto</string>
+    <string name="product_id_helper">Sera la clase que devuelva el modelo de vision (p. ej. leche_brick_1l)</string>
+    <string name="product_name">Nombre</string>
+    <string name="product_expiry_days">Plazo de caducidad (dias)</string>
+    <string name="product_nutriscore">Nutri-Score (A-E, opcional)</string>
+    <string name="product_save">Guardar producto</string>
+    <string name="product_error_required">Rellena identificador, nombre y plazo de caducidad</string>
+    <string name="product_error_days">El plazo de caducidad debe ser un numero entero de dias</string>
+    <string name="product_error_nutriscore">El Nutri-Score debe ser una letra entre A y E</string>
+    <string name="product_ok">Producto creado correctamente</string>
+    <string name="product_ko">No se pudo crear el producto</string>
+
+    <!-- Estadisticas -->
+    <string name="stats_title">Estadisticas</string>
+    <string name="stats_pick_date">Elegir fecha de inicio</string>
+    <string name="stats_since">Datos desde el %1$s</string>
+    <string name="stats_nutriscore_title">Distribucion de Nutri-Score</string>
+    <string name="stats_alerts_title">Alertas por sensor</string>
+    <string name="stats_entries_title">Movimientos</string>
+    <string name="stats_entries">Entradas: %1$d</string>
+    <string name="stats_exits">Salidas: %1$d</string>
+    <string name="stats_empty">No hay registros posteriores a esa fecha</string>
+
+    <!-- Comunes -->
+    <string name="common_back">Volver</string>
+    <string name="common_cancel">Cancelar</string>
+    <string name="common_network_error">No se pudo conectar con el servidor</string>
+    <string name="common_alerts_desc">Alertas</string>
+    <string name="common_more_options">Mas opciones</string>
 </resources>

@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Asistente virtual.
+
+    Tres zonas, tal y como exige el diseño:
+      1. Cabecera con avatar. Contiene DOS vistas superpuestas: un
+         vector estatico (siempre presente) y una LottieAnimationView
+         que solo se muestra si en tiempo de ejecucion se encuentra la
+         animacion en assets/. Asi la pantalla nunca queda "coja" si el
+         .json no esta, y el diseñador puede sustituir la animacion sin
+         tocar codigo Java.
+      2. Zona central de conversacion: RecyclerView con dos tipos de
+         vista (burbuja entrante / saliente).
+      3. Barra inferior de entrada: campo de texto + microfono
+         prominente para dictado.
+
+    El paddingBottom = list_bottom_inset reserva el alto de la
+    BottomNavigationView del shell, que se dibuja POR ENCIMA del
+    NavHost; sin el, la barra de escritura quedaria tapada.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingBottom="@dimen/list_bottom_inset">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:fitsSystemWindows="true"
+        app:title="@string/assistant_title"
+        app:titleTextAppearance="?attr/textAppearanceHeadlineSmall" />
+
+    <!-- ===== 1. Avatar ===== -->
+    <FrameLayout
+        android:id="@+id/avatarContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="@dimen/space_s"
+        android:paddingBottom="@dimen/space_s">
+
+        <ImageView
+            android:id="@+id/avatarFallback"
+            android:layout_width="@dimen/avatar_size"
+            android:layout_height="@dimen/avatar_size"
+            android:layout_gravity="center_horizontal"
+            android:contentDescription="@string/assistant_avatar_desc"
+            android:src="@drawable/ic_avatar_assistant"
+            app:tint="?attr/colorPrimary" />
+
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/avatarLottie"
+            android:layout_width="@dimen/avatar_size"
+            android:layout_height="@dimen/avatar_size"
+            android:layout_gravity="center_horizontal"
+            android:contentDescription="@string/assistant_avatar_desc"
+            android:visibility="gone"
+            app:lottie_autoPlay="true"
+            app:lottie_loop="true" />
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/assistantStatus"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:paddingBottom="@dimen/space_s"
+        android:textAppearance="?attr/textAppearanceLabelMedium"
+        android:textColor="?attr/colorPrimary"
+        android:visibility="invisible"
+        tools:text="Escuchando…"
+        tools:visibility="visible" />
+
+    <!-- ===== 2. Conversacion ===== -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/chatList"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clipToPadding="false"
+        android:paddingStart="@dimen/screen_padding_h"
+        android:paddingTop="@dimen/space_s"
+        android:paddingEnd="@dimen/screen_padding_h"
+        android:paddingBottom="@dimen/space_s"
+        tools:listitem="@layout/item_chat_in" />
+
+    <!-- ===== 3. Entrada ===== -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/screen_padding_h"
+        android:paddingTop="@dimen/space_s"
+        android:paddingEnd="@dimen/screen_padding_h"
+        android:paddingBottom="@dimen/space_s">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_input_bar"
+            android:backgroundTint="?attr/colorSurfaceContainerHigh"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="@dimen/space_m"
+            android:paddingEnd="@dimen/space_s">
+
+            <EditText
+                android:id="@+id/messageInput"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@null"
+                android:hint="@string/assistant_hint"
+                android:imeOptions="actionSend"
+                android:inputType="textCapSentences|textMultiLine"
+                android:maxLines="4"
+                android:textAppearance="?attr/textAppearanceBodyLarge"
+                android:textColor="?attr/colorOnSurface"
+                android:textColorHint="?attr/colorOnSurfaceVariant" />
+
+            <ImageButton
+                android:id="@+id/sendButton"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/assistant_send"
+                android:src="@drawable/ic_send_24"
+                app:tint="?attr/colorPrimary" />
+        </LinearLayout>
+
+        <!--
+            El microfono es un FAB y no un ImageButton a proposito: el
+            dictado por voz es la via de entrada PREFERENTE cuando el
+            usuario esta cocinando y no puede escribir. En M3 la
+            jerarquia se comunica con la forma del control, no solo con
+            el tamaño del icono.
+        -->
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/micButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/space_s"
+            android:contentDescription="@string/assistant_mic"
+            app:srcCompat="@drawable/ic_mic_24" />
+    </LinearLayout>
+</LinearLayout>

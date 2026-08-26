@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Marca de la app: frigorifico + destello de IA. Sustituye a
+     smartfridgelogo.png (raster, sin variante de densidad, ilegible en
+     tema oscuro). Un vector escala a cualquier dpi y se tine con el
+     color del tema. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="72dp" android:height="72dp"
+    android:viewportWidth="72" android:viewportHeight="72">
+    <path
+        android:pathData="M22,8h28a6,6 0 0 1 6,6v44a6,6 0 0 1 -6,6H22a6,6 0 0 1 -6,-6V14a6,6 0 0 1 6,-6z"
+        android:fillColor="#00000000" android:strokeColor="#FF000000"
+        android:strokeWidth="3.5" android:strokeLineJoin="round"/>
+    <path android:pathData="M16,29h40" android:strokeColor="#FF000000"
+        android:strokeWidth="3.5" android:strokeLineCap="round"/>
+    <path android:pathData="M25,17v7" android:strokeColor="#FF000000"
+        android:strokeWidth="3.5" android:strokeLineCap="round"/>
+    <path android:pathData="M25,34v9" android:strokeColor="#FF000000"
+        android:strokeWidth="3.5" android:strokeLineCap="round"/>
+    <path
+        android:pathData="M43,36l2.6,7.4 7.4,2.6 -7.4,2.6 -2.6,7.4 -2.6,-7.4 -7.4,-2.6 7.4,-2.6z"
+        android:fillColor="#FF000000"/>
+</vector>

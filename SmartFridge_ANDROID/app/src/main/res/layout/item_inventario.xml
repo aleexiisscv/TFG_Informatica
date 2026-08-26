@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Fila de inventario.
+
+    "aiInsightRow" esta declarada pero con visibility="gone": es el
+    hueco reservado para que el modelo predictivo inyecte avisos del
+    tipo "consumir en 2 dias" o "patron de consumo inusual" sin
+    rediseñar la tarjeta. Reservar el hueco ahora (y no despues) evita
+    que anadir IA implique reescribir el layout y recalcular alturas.
+-->
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="@style/Widget.SmartFridge.Card"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="@dimen/space_s"
+    android:layout_marginBottom="@dimen/space_xs">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/space_m">
+
+        <TextView
+            android:id="@+id/scoreBadge"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:background="@drawable/bg_score_badge"
+            android:backgroundTint="@color/nutri_unknown"
+            android:gravity="center"
+            android:textAppearance="?attr/textAppearanceTitleMedium"
+            android:textColor="@color/nutri_on_light"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="A" />
+
+        <TextView
+            android:id="@+id/productName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/space_m"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textAppearance="?attr/textAppearanceTitleMedium"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/scoreBadge"
+            app:layout_constraintTop_toTopOf="@id/scoreBadge"
+            tools:text="Leche semidesnatada" />
+
+        <TextView
+            android:id="@+id/expiryChip"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/space_m"
+            android:layout_marginTop="6dp"
+            android:background="@drawable/bg_pill"
+            android:backgroundTint="?attr/colorSurfaceContainerHighest"
+            android:paddingStart="10dp"
+            android:paddingTop="4dp"
+            android:paddingEnd="10dp"
+            android:paddingBottom="4dp"
+            android:textAppearance="?attr/textAppearanceLabelSmall"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            app:layout_constraintStart_toEndOf="@id/scoreBadge"
+            app:layout_constraintTop_toBottomOf="@id/productName"
+            tools:text="Caduca en 3 dias" />
+
+        <!-- ===== Hueco reservado a la IA (oculto hasta que el modelo exista) ===== -->
+        <LinearLayout
+            android:id="@+id/aiInsightRow"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_s"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/expiryChip"
+            tools:visibility="visible">
+
+            <ImageView
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:contentDescription="@null"
+                android:src="@drawable/ic_ai_sparkle_24"
+                app:tint="?attr/colorTertiary" />
+
+            <TextView
+                android:id="@+id/aiInsightText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/space_s"
+                android:layout_weight="1"
+                android:textAppearance="?attr/textAppearanceBodySmall"
+                android:textColor="?attr/colorTertiary"
+                tools:text="Sueles consumirlo en 2 dias" />
+        </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</com.google.android.material.card.MaterialCardView>

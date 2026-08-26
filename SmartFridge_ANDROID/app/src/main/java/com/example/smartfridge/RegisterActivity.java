@@ -3,85 +3,132 @@ package com.example.smartfridge;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.Toast;
+import android.util.Patterns;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.smartfridge.api.RetrofitClient;
 import com.example.smartfridge.api.dto.AuthResponse;
 import com.example.smartfridge.api.dto.RegisterRequest;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.snackbar.Snackbar;
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
 /**
- * PENDIENTE DE BACKEND: llama a POST /api/auth/registro, que TODAVÍA
- * NO EXISTE (ver nota en SmartFridgeApi y LoginActivity).
+ * Alta de usuario contra {@code POST /api/auth/registro}.
  *
- * OJO — IDs de vista asumidos: nombreInput / correoInput /
- * passwordInput / registerButton, siguiendo la misma convención de
- * nombres que ya usa CreateProductActivity. Las distintas versiones de
- * activity_register.xml que he podido revisar en el proyecto no
- * dejaban claro el layout definitivo (una incluso cargaba
- * activity_main.xml por error). Ajusta estos R.id a los que tenga tu
- * layout real antes de compilar.
+ * <p>QUEDA RESUELTA la incongruencia documentada en la version
+ * anterior de esta clase: los {@code R.id} que usaba
+ * ({@code nombreInput}, {@code correoInput}, {@code passwordInput},
+ * {@code registerButton}) eran "asumidos" porque el layout definitivo
+ * no estaba claro. El nuevo {@code activity_register.xml} declara
+ * exactamente esos identificadores, asi que codigo y layout ya no
+ * pueden divergir.</p>
  *
- * También se elimina el campo "inventario" que enviaba el
- * createUser() legacy: Usuario ya no tiene ese campo en el backend
- * (se retiró en la Fase 2 por no tener una relación FK real).
+ * <p>Tambien desaparecen del formulario los {@code CheckBox}
+ * "Male"/"Female": ninguna Activity los leia, {@code RegisterRequest}
+ * no los transporta y {@code Usuario} del backend no tiene ese campo.
+ * Pedir un dato personal que el sistema no procesa es exactamente lo
+ * que prohibe el principio de minimizacion de datos.</p>
  */
 public class RegisterActivity extends AppCompatActivity {
 
     private static final String TAG = "RegisterActivity";
 
+    private TextInputLayout nameLayout;
+    private TextInputLayout emailLayout;
+    private TextInputLayout passwordLayout;
+    private TextInputEditText nombreInput;
+    private TextInputEditText correoInput;
+    private TextInputEditText passwordInput;
+    private MaterialButton registerButton;
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
-        EditText nombreField = findViewById(R.id.nombreInput);
-        EditText correoField = findViewById(R.id.correoInput);
-        EditText passwordField = findViewById(R.id.passwordInput);
-        Button registerButton = findViewById(R.id.registerButton);
+        nameLayout = findViewById(R.id.nameLayout);
+        emailLayout = findViewById(R.id.emailLayout);
+        passwordLayout = findViewById(R.id.passwordLayout);
+        nombreInput = findViewById(R.id.nombreInput);
+        correoInput = findViewById(R.id.correoInput);
+        passwordInput = findViewById(R.id.passwordInput);
+        registerButton = findViewById(R.id.registerButton);
 
-        registerButton.setOnClickListener(v -> {
-            String nombre = nombreField.getText().toString().trim();
-            String correo = correoField.getText().toString().trim();
-            String password = passwordField.getText().toString().trim();
+        registerButton.setOnClickListener(v -> intentarRegistro());
+        findViewById(R.id.goToLoginButton).setOnClickListener(v -> finish());
+    }
 
-            if (nombre.isEmpty() || correo.isEmpty() || password.isEmpty()) {
-                Toast.makeText(this, "Rellena todos los campos", Toast.LENGTH_SHORT).show();
-                return;
-            }
+    private void intentarRegistro() {
+        String nombre = texto(nombreInput);
+        String correo = texto(correoInput);
+        String password = texto(passwordInput);
 
-            registerButton.setEnabled(false);
+        nameLayout.setError(null);
+        emailLayout.setError(null);
+        passwordLayout.setError(null);
 
-            RegisterRequest request = new RegisterRequest(nombre, correo, password);
-            RetrofitClient.getApi().registrar(request).enqueue(new Callback<AuthResponse>() {
-                @Override
-                public void onResponse(Call<AuthResponse> call, Response<AuthResponse> response) {
-                    registerButton.setEnabled(true);
-                    if (response.isSuccessful()) {
-                        Toast.makeText(RegisterActivity.this, "Cuenta creada. Ya puedes iniciar sesión.", Toast.LENGTH_SHORT).show();
-                        startActivity(new Intent(RegisterActivity.this, LoginActivity.class));
-                        finish();
-                    } else {
-                        // p. ej. 409 Conflict si el correo ya existe (a
-                        // implementar en el futuro UsuarioService)
-                        Toast.makeText(RegisterActivity.this, "No se pudo crear la cuenta (¿correo ya registrado?)", Toast.LENGTH_LONG).show();
+        boolean hayError = false;
+        if (nombre.isEmpty()) {
+            nameLayout.setError(getString(R.string.auth_error_empty));
+            hayError = true;
+        }
+        if (password.isEmpty()) {
+            passwordLayout.setError(getString(R.string.auth_error_empty));
+            hayError = true;
+        }
+        if (correo.isEmpty()) {
+            emailLayout.setError(getString(R.string.auth_error_empty));
+            hayError = true;
+        } else if (!Patterns.EMAIL_ADDRESS.matcher(correo).matches()) {
+            emailLayout.setError(getString(R.string.auth_error_email));
+            hayError = true;
+        }
+        if (hayError) {
+            return;
+        }
+
+        registerButton.setEnabled(false);
+
+        RetrofitClient.getApi().registrar(new RegisterRequest(nombre, correo, password))
+                .enqueue(new Callback<AuthResponse>() {
+                    @Override
+                    public void onResponse(@NonNull Call<AuthResponse> call,
+                                           @NonNull Response<AuthResponse> response) {
+                        registerButton.setEnabled(true);
+                        if (response.isSuccessful()) {
+                            Snackbar.make(registerButton, R.string.auth_ok_registered,
+                                    Snackbar.LENGTH_SHORT).show();
+                            // Se vuelve al login en lugar de apilar otra
+                            // Activity encima: el login sigue vivo debajo.
+                            startActivity(new Intent(RegisterActivity.this, LoginActivity.class)
+                                    .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
+                            finish();
+                        } else {
+                            // 409 Conflict cuando el correo ya existe.
+                            emailLayout.setError(getString(R.string.auth_error_duplicate));
+                        }
                     }
-                }
 
-                @Override
-                public void onFailure(Call<AuthResponse> call, Throwable t) {
-                    registerButton.setEnabled(true);
-                    Log.e(TAG, "Fallo de red al registrar", t);
-                    Toast.makeText(RegisterActivity.this, "No se pudo conectar con el servidor", Toast.LENGTH_SHORT).show();
-                }
-            });
-        });
+                    @Override
+                    public void onFailure(@NonNull Call<AuthResponse> call, @NonNull Throwable t) {
+                        registerButton.setEnabled(true);
+                        Log.e(TAG, "Fallo de red al registrar", t);
+                        Snackbar.make(registerButton, R.string.common_network_error,
+                                Snackbar.LENGTH_LONG).show();
+                    }
+                });
+    }
+
+    private static String texto(TextInputEditText campo) {
+        return campo.getText() == null ? "" : campo.getText().toString().trim();
     }
 }

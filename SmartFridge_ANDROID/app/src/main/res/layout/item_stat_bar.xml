@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Barra de una categoria de Nutri-Score. Se infla una por letra
+     presente en los datos; la anchura util la fija el weight, que se
+     calcula en Java a partir del porcentaje. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingTop="@dimen/space_xs"
+    android:paddingBottom="@dimen/space_xs">
+
+    <TextView
+        android:id="@+id/barLabel"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:background="@drawable/bg_score_badge"
+        android:backgroundTint="@color/nutri_unknown"
+        android:gravity="center"
+        android:textAppearance="?attr/textAppearanceLabelLarge"
+        android:textColor="@color/nutri_on_light"
+        android:textStyle="bold"
+        tools:text="A" />
+
+    <View
+        android:id="@+id/barFill"
+        android:layout_width="0dp"
+        android:layout_height="12dp"
+        android:layout_marginStart="@dimen/space_m"
+        android:layout_weight="1"
+        android:background="@drawable/bg_pill"
+        android:backgroundTint="@color/nutri_unknown" />
+
+    <View
+        android:id="@+id/barRest"
+        android:layout_width="0dp"
+        android:layout_height="12dp"
+        android:layout_weight="1" />
+
+    <TextView
+        android:id="@+id/barValue"
+        android:layout_width="56dp"
+        android:layout_height="wrap_content"
+        android:gravity="end"
+        android:textAppearance="?attr/textAppearanceLabelMedium"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        tools:text="42 %" />
+</LinearLayout>

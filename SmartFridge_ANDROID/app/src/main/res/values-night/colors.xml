@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Solo se sobreescriben los colores de DOMINIO. Los roles M3
+    (md_theme_*) no necesitan variante -night porque themes.xml y
+    values-night/themes.xml ya seleccionan el bloque light/dark
+    correcto; duplicarlos aqui seria una fuente silenciosa de
+    divergencia.
+
+    Los contenedores de estado se oscurecen para conservar el ratio de
+    contraste WCAG AA (>= 4.5:1) contra el texto claro del tema oscuro.
+-->
+<resources>
+    <color name="state_ok">#81C784</color>
+    <color name="state_ok_container">#1B3A1D</color>
+    <color name="state_warn">#FFB74D</color>
+    <color name="state_warn_container">#3D2B00</color>
+    <color name="state_alert">#EF9A9A</color>
+    <color name="state_alert_container">#4A1414</color>
+    <color name="nutri_on_light">#FFFFFF</color>
+    <color name="nutri_on_dark">#1A1A1A</color>
+</resources>
