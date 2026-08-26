@@ -1,0 +1,60 @@
+spring:
+  application:
+    name: smartfridge-backend
+
+  datasource:
+    # ------------------------------------------------------------------
+    # SUPABASE — elegido como proveedor cloud para esta iteración.
+    #
+    # Supabase expone tres formas de conectar a Postgres; solo una es
+    # apta para un despliegue normal (Railway/Render/tu propia máquina)
+    # sin soporte IPv6:
+    #
+    #   1) Conexión directa  db.<project-ref>.supabase.co:5432
+    #      -> SOLO IPv6 en el plan gratuito. Descartada.
+    #   2) Supavisor "Transaction pooler" (puerto 6543)
+    #      -> Pooling real, pero PgBouncer en modo transacción NO es
+    #         compatible con los prepared statements de servidor que usa
+    #         Hibernate por defecto; obligaría a añadir
+    #         "?prepareThreshold=0" y renunciar a esa caché.
+    #   3) Supavisor "Session pooler" (puerto 5432)  <-- LA QUE USAMOS
+    #      -> Mapeo 1:1 cliente-conexión (igual que Postgres nativo),
+    #         100% compatible con Hibernate sin tocar nada, y soporta
+    #         IPv4. Para el volumen de conexiones de un TFG (1 backend,
+    #         tráfico bajo) es la opción más simple y menos propensa a
+    #         errores difíciles de depurar. La Transaction pooler queda
+    #         documentada como mejora de escalabilidad futura en la
+    #         memoria si se necesitase soportar muchas instancias del
+    #         backend en paralelo.
+    #
+    # Host y project-ref se obtienen en Supabase > Project Settings >
+    # Database > Connection string > "Session pooler".
+    # Formato: aws-0-<region>.pooler.supabase.com
+    # Usuario: postgres.<project-ref>  (OJO: no es solo "postgres")
+    # ------------------------------------------------------------------
+    url: jdbc:postgresql://aws-1-eu-west-1.pooler.supabase.com:5432/postgres?sslmode=require
+    username: postgres.jsjvttmnyaespebtfvyl
+    password: ubicua2026_
+  jpa:
+    hibernate:
+      # "update" solo en desarrollo local. En despliegues reales se recomienda
+      # "validate" + migraciones versionadas (Flyway) para no perder el
+      # control del esquema como pasó con la BBDD original.
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+    show-sql: false
+    open-in-view: false   # Evita el anti-patrón Open Session In View en una API REST
+
+server:
+  port: 8081
+
+# Parámetros propios de la integración MQTT (leídos por MqttConfig en la fase 3)
+smartfridge:
+  mqtt:
+    broker-url: ${MQTT_BROKER_URL:tcp://localhost:1883}
+    client-id: smartfridge-backend
+    username: ${MQTT_USERNAME:ubicua}
+    password: ${MQTT_PASSWORD:ubicua}
+    base-topic: frigorifico/#

@@ -31,8 +31,8 @@ android {
     }
     packaging {
         resources {
-            excludes.add("META-INF/LGPL2.1")  // Ignorar el archivo duplicado
-            excludes.add("META-INF/AL2.0") // Ignorar el archivo duplicado
+            excludes.add("META-INF/LGPL2.1")
+            excludes.add("META-INF/AL2.0")
         }
     }
 }
@@ -46,22 +46,23 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
-    // Dependencias para MQTT
+
+    // Dependencias para MQTT — de momento se dejan tal cual; revisar si
+    // siguen teniendo uso una vez el móvil hable solo con la API REST,
+    // o si se quieren para publicar directamente en frigorifico/modo
+    // (ver TODO en DashboardActivity sobre el switch de RFID).
     implementation(libs.org.eclipse.paho.client.mqttv3)
     implementation(libs.org.eclipse.paho.android.service)
-    // Dependencias para SQL
-    implementation(libs.mysql.connector.java)
-    implementation(libs.mariadb.java.client)
-    implementation(libs.constraintlayout)
-    /*implementation(libs.jetty.server)
-    implementation(libs.naming)*/
-    // Para mqtt jakarta
-    implementation(libs.jakarta.servlet.api)
-    // para gson de google
+
+    // para gson de google (ya se usaba; ahora también como converter de Retrofit)
     implementation(libs.gson)
-    implementation(libs.hikaricp)
-    // jndi de java
 
     implementation(libs.okhttp)
-    //implementation(libs.glassy.jndi) // De momento no funciona
+
+    // --- Nuevo en la Fase 5 ---
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.converter.gson)
+
+    // RETIRADO: mysql-connector-java, mariadb-java-client, hikaricp,
+    // jakarta-servlet-api. Ver nota completa en gradle/libs.versions.toml.
 }

@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -12,46 +13,46 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.FormBody;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
 
-import java.io.IOException;
-import java.text.ParseException;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.text.SimpleDateFormat;
-import java.util.Locale;
 
+import com.example.smartfridge.api.RetrofitClient;
+import com.example.smartfridge.api.dto.InventarioDto;
+import com.example.smartfridge.api.dto.RegistroDto;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
+/**
+ * Refactorizada para consumir el backend Spring Boot vía Retrofit, en
+ * vez de ServerConnectionThread + HttpURLConnection contra los
+ * Servlets legacy.
+ *
+ * Simplificación notable: antes había que descargar las tablas
+ * "productos" e "inventario" por separado y cruzarlas a mano en el
+ * cliente (ver setCombinedProductList en la versión anterior, con un
+ * HashMap<String, JSONObject> para el join). Ahora GET /api/inventario
+ * ya devuelve nombreProducto y nutriScore aplanados en cada fila —el
+ * backend hace el JOIN, no el móvil— así que aquí solo queda pintar.
+ */
 public class DashboardActivity extends AppCompatActivity {
 
-    private boolean stateRfid;
+    private static final String TAG = "DashboardActivity";
+
     private TableLayout tableProductos;
     private Switch switchRFID;
     private Button logoutButton;
     private Button statsButton;
     private Button createProductButton;
-
     private Button sensorButton;
-
     private ImageButton alertBellButton;
-
-    private Handler handler = new Handler();
-    private Runnable alertCheckRunnable;
-    public boolean alertaExist = true; // Estado inicial de la alerta
-
     private View alertIndicator;
 
+    private final Handler handler = new Handler();
+    private Runnable alertCheckRunnable;
     private String alertaDescripcion = "";
 
     @Override
@@ -68,273 +69,175 @@ public class DashboardActivity extends AppCompatActivity {
         alertBellButton = findViewById(R.id.alertBellButton);
         alertIndicator = findViewById(R.id.alertIndicator);
 
-
-        // Manejar el estado del RFID
         switchRFID.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            stateRfid = isChecked;
-            //Sensor.setRFIDState(isChecked); // Método de la clase Sensor para manejar el estado del lector RFID
-            String message = isChecked ? "Modo entrada de alimentos activado" : "Modo entrada de alimentos desactivado";
-            cambiarModoEnServidor(isChecked);
-            Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+            // PENDIENTE DE DECISIÓN DE ARQUITECTURA: este switch pretendía
+            // cambiar el modo INSERTAR/ELIMINAR del frigorífico. Hoy ese
+            // modo solo se puede cambiar publicando en el topic MQTT
+            // "frigorifico/modo" (ver EstadoModoFrigorifico en el
+            // backend); no existe todavía un endpoint REST equivalente.
+            // Dos caminos posibles para una futura iteración:
+            //   (a) el propio móvil publica por MQTT directamente
+            //       (ya hay dependencias de Paho en build.gradle.kts), o
+            //   (b) se añade un POST /api/modo en el backend que delegue
+            //       en EstadoModoFrigorifico.
+            // Se deja sin conectar a propósito hasta decidir cuál.
+            String modo = isChecked ? "INSERTAR" : "ELIMINAR";
+            Toast.makeText(this, "Modo " + modo + " (aún no conectado al servidor)", Toast.LENGTH_SHORT).show();
         });
 
-        // Botón de cerrar sesión
         logoutButton.setOnClickListener(v -> {
-            Intent intent = new Intent(DashboardActivity.this, MainActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intent);
+            startActivity(new Intent(DashboardActivity.this, LoginActivity.class));
             finish();
         });
 
-        // Botón para estadísticas
-        statsButton.setOnClickListener(v -> {
-            Intent intent = new Intent(DashboardActivity.this, StatsActivity.class);
-            startActivity(intent);
+        statsButton.setOnClickListener(v ->
+                startActivity(new Intent(DashboardActivity.this, StatsActivity.class)));
+
+        createProductButton.setOnClickListener(v ->
+                startActivity(new Intent(DashboardActivity.this, CreateProductActivity.class)));
+
+        sensorButton.setOnClickListener(v ->
+                startActivity(new Intent(DashboardActivity.this, SensorActivity.class)));
+
+        alertBellButton.setOnClickListener(v -> {
+            String mensaje = alertaDescripcion.isEmpty() ? "Sin alertas activas" : alertaDescripcion;
+            Toast.makeText(this, mensaje, Toast.LENGTH_LONG).show();
         });
 
-        sensorButton.setOnClickListener(v -> {
-            Intent intent = new Intent(DashboardActivity.this, SensorActivity.class);
-            startActivity(intent);
-        });
+        cargarInventario();
+        iniciarComprobacionDeAlertas();
+    }
 
-        // Botón para crear productos
-        createProductButton.setOnClickListener(v -> {
-            Intent intent = new Intent(DashboardActivity.this, CreateProductActivity.class);
-            startActivity(intent);
-        });
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Por si se vuelve aquí tras crear un producto o tras un evento
+        // RFID reciente en CreateProductActivity/SensorActivity.
+        cargarInventario();
+    }
 
-        alertBellButton.setOnClickListener(new View.OnClickListener() {
+    private void cargarInventario() {
+        RetrofitClient.getApi().listarInventario().enqueue(new Callback<List<InventarioDto>>() {
             @Override
-            public void onClick(View view) {
-
-                Toast.makeText(DashboardActivity.this, alertaDescripcion, Toast.LENGTH_LONG).show();
-            }
-        });
-        loadProductTest();
-        setupAlertChecker();
-    }
-
-    private void loadProductTest() {
-        String url = "http://192.168.116.180:8080/ServerExampleUbicomp-1.0-SNAPSHOT/databaseAction";
-        ServerConnectionThread.clase = "DashboardActivity";
-        ServerConnectionThread thread = new ServerConnectionThread(this, url);
-        try {
-            thread.join();
-        } catch (InterruptedException e) {
-        }
-    }
-
-    private void loadAlertas() {
-        String url = "http://192.168.116.180:8080/ServerExampleUbicomp-1.0-SNAPSHOT/databaseAction";
-        ServerConnectionThread.clase = "DashboardActivity2";
-        ServerConnectionThread thread = new ServerConnectionThread(this, url);
-        try {
-            thread.join();
-        } catch (InterruptedException e) {
-        }
-    }
-
-    public void setCombinedProductList(JSONArray jsonProductos, JSONArray jsonInventario) {
-        runOnUiThread(new Runnable() { // Asegura que la actualización de la UI se haga en el hilo principal
-            @Override
-            public void run() {
-                try {
-                    tableProductos.removeAllViews(); // Limpiar la tabla antes de agregar nuevos datos
-
-                    // Encabezado de la tabla
-                    TableRow header = new TableRow(DashboardActivity.this);
-                    header.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.WRAP_CONTENT));
-
-                    header.addView(createTextView("Nombre"));
-                    header.addView(createTextView("Nutri-Score"));
-                    header.addView(createTextView("Caducidad"));
-                    tableProductos.addView(header);
-
-                    // Crear un mapa para acceso rápido a los productos por RFID
-                    HashMap<String, JSONObject> productoMap = new HashMap<>();
-                    for (int i = 0; i < jsonProductos.length(); i++) {
-                        JSONObject producto = jsonProductos.getJSONObject(i);
-                        productoMap.put(producto.getString("rfid_tag"), producto);
-                    }
-
-                    // Procesar cada entrada de inventario y buscar los datos del producto
-                    for (int j = 0; j < jsonInventario.length(); j++) {
-                        JSONObject inventario = jsonInventario.getJSONObject(j);
-                        String productoRFID = inventario.getString("producto_id");
-                        JSONObject producto = productoMap.get(productoRFID);
-
-                        if (producto != null) {
-                            TableRow row = new TableRow(DashboardActivity.this);
-                            row.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.WRAP_CONTENT));
-
-                            // Extracción de datos del producto relacionado
-                            String nombre = producto.getString("nombre");
-                            String nutriScore = producto.getString("nutri_score");
-                            String fechaCaducidad = inventario.getString("fecha_caducidad");
-
-                            // Creación de TextViews para cada columna
-                            TextView nombreTextView = createTextView(nombre);
-                            TextView nutriScoreTextView = createTextView(nutriScore);
-                            TextView fechaCadTextView = createTextView(fechaCaducidad);
-
-                            // Añadir TextViews al row
-                            row.addView(nombreTextView);
-                            row.addView(nutriScoreTextView);
-                            row.addView(fechaCadTextView);
-
-                            // Añadir fila a la tabla
-                            tableProductos.addView(row);
-                        }
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
+            public void onResponse(Call<List<InventarioDto>> call, Response<List<InventarioDto>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    pintarTabla(response.body());
+                } else {
+                    Log.w(TAG, "Respuesta no exitosa al listar inventario: HTTP " + response.code());
                 }
             }
+
+            @Override
+            public void onFailure(Call<List<InventarioDto>> call, Throwable t) {
+                // Fallo de red (backend caído, IP mal configurada en
+                // RetrofitClient, sin conexión...). A diferencia del
+                // sistema legacy, aquí el fallo no tumba la Activity: se
+                // registra y se informa al usuario, la tabla simplemente
+                // no se actualiza en este ciclo.
+                Log.e(TAG, "Fallo de red al cargar el inventario", t);
+                Toast.makeText(DashboardActivity.this, "No se pudo conectar con el servidor", Toast.LENGTH_SHORT).show();
+            }
         });
     }
 
-    private TextView createTextView(String text) {
+    private void pintarTabla(List<InventarioDto> inventario) {
+        // El callback de Retrofit/OkHttp NO llega en el hilo principal:
+        // cualquier manipulación de vistas debe volver explícitamente al
+        // hilo de UI con runOnUiThread (igual que hacía el código legacy
+        // con ServerConnectionThread, pero ahora Retrofit gestiona el
+        // hilo de fondo por nosotros, sin necesidad de una clase Thread
+        // propia ni de thread.join() bloqueante).
+        runOnUiThread(() -> {
+            tableProductos.removeAllViews();
+
+            TableRow header = new TableRow(DashboardActivity.this);
+            header.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.WRAP_CONTENT));
+            header.addView(crearTextView("Nombre", true));
+            header.addView(crearTextView("Nutri-Score", true));
+            header.addView(crearTextView("Caducidad", true));
+            tableProductos.addView(header);
+
+            for (InventarioDto unidad : inventario) {
+                TableRow row = new TableRow(DashboardActivity.this);
+                row.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.WRAP_CONTENT));
+                row.addView(crearTextView(unidad.nombreProducto, false));
+                row.addView(crearTextView(unidad.nutriScore, false));
+                row.addView(crearTextView(unidad.fechaCaducidad, false));
+                tableProductos.addView(row);
+            }
+        });
+    }
+
+    private TextView crearTextView(String texto, boolean cabecera) {
         TextView textView = new TextView(DashboardActivity.this);
-        textView.setText(text);
+        textView.setText(texto);
         textView.setPadding(8, 8, 8, 8);
+        if (cabecera) {
+            textView.setTypeface(null, Typeface.BOLD);
+        }
         textView.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
         return textView;
     }
 
-
-    public void handleJsonResponse(String jsonResponse) {
-        try {
-            JSONObject jsonObject = new JSONObject(jsonResponse);
-            if (jsonObject.has("productos")) {
-                JSONArray jsonProductos = jsonObject.getJSONArray("productos");
-                JSONArray jsonInventario = jsonObject.getJSONArray("inventarios");
-
-
-                setCombinedProductList(jsonProductos, jsonInventario);
-            }
-            // Añade más secciones según sea necesario
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void handleAlertas(String jsonResponse) {
-        boolean foundRecentAnomaly = false;  // Bandera para detectar anomalías recientes
-        SimpleDateFormat dateFormat = new SimpleDateFormat("MMM d, yyyy, h:mm:ss a", Locale.ENGLISH);
-
-        try {
-            JSONObject jsonObject = new JSONObject(jsonResponse);
-            if (jsonObject.has("registros")) {
-                JSONArray jsonRegistros = jsonObject.getJSONArray("registros");
-                long oneMinuteAgo = System.currentTimeMillis() - 3660000;  // Tiempo actual menos un minuto
-
-                for (int i = 0; i < jsonRegistros.length(); i++) {
-                    JSONObject registro = jsonRegistros.getJSONObject(i);
-                    String tipoRegistro = registro.getString("tipo_registro");
-                    int idSensor = registro.getInt("id_sensor");
-                    String fechaRegistro = registro.getString("fecha");
-
-                    try {
-                        Date registroDate = dateFormat.parse(fechaRegistro);
-
-
-                        if ("anomalia".equals(tipoRegistro) && registroDate.getTime() > oneMinuteAgo) {
-                            System.out.println("Anomalia encontrada en el último minuto");
-                            foundRecentAnomaly = true;  // Encontró una anomalía reciente
-                            processRegistro(tipoRegistro, idSensor);
-                        }
-                    } catch (java.text.ParseException e) {
-                        System.out.println("Error al parsear la fecha del registro");
-                    }
-                }
-            }
-
-            // Actualizar la variable de alertaExist según si se encontraron anomalías recientes
-            alertaExist = foundRecentAnomaly;
-            if (!alertaExist) {
-                alertaDescripcion = "No se detectan alertas nuevas";
-
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void processRegistro(String tipoRegistro, int idSensor) {
-        if ("anomalia".equals(tipoRegistro)) {
-            if (idSensor == 1) {
-                alertaExist = true;
-                alertaDescripcion = "Agua dectectada: Revisar Frigorifico";
-            } else if (idSensor == 3) {
-                alertaExist = true;
-                alertaDescripcion = "Temperatura alta: Revisar Frigorifico";
-            } else if (idSensor == 4) {
-                alertaExist = true;
-                alertaDescripcion = "Puerta Abierta: Cerrar Frigorifico";
-            } else if (idSensor == 2) {
-                alertaExist = true;
-                alertaDescripcion = "Humedad alta: Revisar Frigorifico";
-            }
-        }
-    }
-
-
-    private void addTextToRow(TableRow row, String text, boolean isHeader) {
-        TextView textView = new TextView(this);
-        textView.setText(text);
-        textView.setPadding(8, 8, 8, 8);
-        if (isHeader) {
-            textView.setTypeface(null, Typeface.BOLD);
-        }
-        row.addView(textView);
-    }
-
-    private void setupAlertChecker() {
+    private void iniciarComprobacionDeAlertas() {
         alertCheckRunnable = new Runnable() {
             @Override
             public void run() {
-                loadAlertas();
-                if (alertaExist) {
-                    alertIndicator.setVisibility(View.VISIBLE);
-                } else {
-                    alertIndicator.setVisibility(View.GONE);
-                }
-                handler.postDelayed(this, 2000); // Re-post the delay
+                comprobarAlertas();
+                handler.postDelayed(this, 2000);
             }
         };
-        handler.postDelayed(alertCheckRunnable, 2000); // Start the initial delay
+        handler.postDelayed(alertCheckRunnable, 2000);
     }
 
-    private void cambiarModoEnServidor(boolean isChecked) {
-        String url = "http://192.168.116.180:8080/ServerExampleUbicomp-1.0-SNAPSHOT/cambiarModo"; // Reemplaza tu-dominio con la URL de tu servidor
-        OkHttpClient client = new OkHttpClient();
-
-        RequestBody formBody = new FormBody.Builder()
-                .add("modo", isChecked ? "INSERTAR" : "ELIMINAR")
-                .build();
-
-        Request request = new Request.Builder()
-                .url(url)
-                .post(formBody)
-                .build();
-
-        client.newCall(request).enqueue(new Callback() {
+    private void comprobarAlertas() {
+        RetrofitClient.getApi().listarRegistros("ALERTA").enqueue(new Callback<List<RegistroDto>>() {
             @Override
-            public void onFailure(Call call, IOException e) {
-                e.printStackTrace();
-                runOnUiThread(() -> Toast.makeText(getApplicationContext(), "Error de conexión", Toast.LENGTH_SHORT).show());
+            public void onResponse(Call<List<RegistroDto>> call, Response<List<RegistroDto>> response) {
+                if (!response.isSuccessful() || response.body() == null) {
+                    return;
+                }
+                List<RegistroDto> alertas = response.body();
+                boolean hayAlertas = !alertas.isEmpty();
+                if (hayAlertas) {
+                    // El backend ya devuelve findByTipoRegistroOrderByFechaDesc:
+                    // el primer elemento es la alerta más reciente.
+                    alertaDescripcion = describirAlerta(alertas.get(0));
+                }
+                runOnUiThread(() ->
+                        alertIndicator.setVisibility(hayAlertas ? View.VISIBLE : View.GONE));
             }
 
             @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                if (response.isSuccessful()) {
-                    String responseData = response.body().string();
-                    runOnUiThread(() -> Toast.makeText(getApplicationContext(), "Modo cambiado a: " + responseData, Toast.LENGTH_SHORT).show());
-                } else {
-                    runOnUiThread(() -> Toast.makeText(getApplicationContext(), "Error al cambiar modo", Toast.LENGTH_SHORT).show());
-                }
+            public void onFailure(Call<List<RegistroDto>> call, Throwable t) {
+                Log.w(TAG, "No se pudieron comprobar las alertas", t);
             }
         });
     }
-}
 
+    private String describirAlerta(RegistroDto registro) {
+        if (registro.sensorTipo == null) {
+            return "Alerta en el frigorífico";
+        }
+        // OJO: comparar contra MAYÚSCULAS ("AGUA", no "agua") — ver nota
+        // de contrato en SensorDto.
+        switch (registro.sensorTipo) {
+            case "AGUA":
+                return "Agua detectada: revisar frigorífico";
+            case "TEMPERATURA":
+                return "Temperatura alta: revisar frigorífico";
+            case "PUERTA":
+                return "Puerta abierta: cerrar frigorífico";
+            case "HUMEDAD":
+                return "Humedad alta: revisar frigorífico";
+            default:
+                return "Alerta en el frigorífico";
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        handler.removeCallbacks(alertCheckRunnable);
+    }
+}

@@ -1,254 +1,87 @@
-
 package com.example.smartfridge;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Toast;
-import androidx.activity.EdgeToEdge;
+
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import com.example.smartfridge.api.RetrofitClient;
+import com.example.smartfridge.api.dto.AuthResponse;
+import com.example.smartfridge.api.dto.RegisterRequest;
 
-import java.io.IOException;
-import java.sql.Connection;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
-
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.FormBody;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-
+/**
+ * PENDIENTE DE BACKEND: llama a POST /api/auth/registro, que TODAVÍA
+ * NO EXISTE (ver nota en SmartFridgeApi y LoginActivity).
+ *
+ * OJO — IDs de vista asumidos: nombreInput / correoInput /
+ * passwordInput / registerButton, siguiendo la misma convención de
+ * nombres que ya usa CreateProductActivity. Las distintas versiones de
+ * activity_register.xml que he podido revisar en el proyecto no
+ * dejaban claro el layout definitivo (una incluso cargaba
+ * activity_main.xml por error). Ajusta estos R.id a los que tenga tu
+ * layout real antes de compilar.
+ *
+ * También se elimina el campo "inventario" que enviaba el
+ * createUser() legacy: Usuario ya no tiene ese campo en el backend
+ * (se retiró en la Fase 2 por no tener una relación FK real).
+ */
 public class RegisterActivity extends AppCompatActivity {
-    int id = 1; // id para usuario e inventario
 
-    private JSONArray usuarios=null;
+    private static final String TAG = "RegisterActivity";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_register);
 
-        // Ajusta los márgenes para las barras del sistema
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
-
-        // Obtén los CheckBox por sus IDs
-        CheckBox checkBox1 = findViewById(R.id.checkBox2);
-        CheckBox checkBox2 = findViewById(R.id.checkBox3);
-
-        // Configura el listener para el primer CheckBox
-        checkBox1.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            if (isChecked) {
-                checkBox2.setChecked(false); // Desactiva el segundo CheckBox
-            }
-        });
-
-        // Configura el listener para el segundo CheckBox
-        checkBox2.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            if (isChecked) {
-                checkBox1.setChecked(false); // Desactiva el primer CheckBox
-            }
-        });
-
-        // Obtén los EditText por sus IDs
-        EditText nameText = findViewById(R.id.NameText);
-        EditText passwordText = findViewById(R.id.Password);
-        EditText mailText = findViewById(R.id.Mail);
-
-        // Configura los listeners para limpiar el texto al hacer clic
-        nameText.setOnFocusChangeListener((v, hasFocus) -> {
-            if (hasFocus && nameText.getText().toString().equals("Name...")) {
-                nameText.setText("");
-            }
-        });
-
-        passwordText.setOnFocusChangeListener((v, hasFocus) -> {
-            if (hasFocus && passwordText.getText().toString().equals("Password...")) {
-                passwordText.setText("");
-                if (passwordText.length() < 8) {
-                    Toast.makeText(this, "La contraseña debe tener al menos 8 caracteres.", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
-
-        mailText.setOnFocusChangeListener((v, hasFocus) -> {
-            if (hasFocus && mailText.getText().toString().equals("Mail...")) {
-                mailText.setText("");
-            }
-        });
-
-        // Configura el botón de registro
+        EditText nombreField = findViewById(R.id.nombreInput);
+        EditText correoField = findViewById(R.id.correoInput);
+        EditText passwordField = findViewById(R.id.passwordInput);
         Button registerButton = findViewById(R.id.registerButton);
+
         registerButton.setOnClickListener(v -> {
-            loadUsuarios();
-            String name = nameText.getText().toString();
-            String password = passwordText.getText().toString();
-            String mail = mailText.getText().toString();
-            String checkBoxSelection = checkBox1.isChecked() ? "CheckBox1" : (checkBox2.isChecked() ? "CheckBox2" : "None");
+            String nombre = nombreField.getText().toString().trim();
+            String correo = correoField.getText().toString().trim();
+            String password = passwordField.getText().toString().trim();
 
-            // Valida los campos
-            if (name.isEmpty() || password.isEmpty() || mail.isEmpty() || checkBoxSelection.equals("None")) {
-                Toast.makeText(this, "Por favor, complete todos los campos y seleccione un checkbox.", Toast.LENGTH_SHORT).show();
+            if (nombre.isEmpty() || correo.isEmpty() || password.isEmpty()) {
+                Toast.makeText(this, "Rellena todos los campos", Toast.LENGTH_SHORT).show();
                 return;
-            }else if (password.length() < 8) {
-                Toast.makeText(this, "La contraseña debe tener al menos 8 caracteres.", Toast.LENGTH_SHORT).show();
+            }
 
-                // Limpia los campos
-                nameText.setText("");
-                passwordText.setText("");
-                mailText.setText("");
-                checkBox1.setChecked(false);
-                checkBox2.setChecked(false);
-            }else {
-                //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-                //%%%%%%%%%%% Registrar al usuario (nuevo metodo a implementar) %%%%%%%%%%%%%%%%%%%%%%%%%%%
-                    try {
-                        if (mail.equals("testUser")) {
-                            //Codigo para modo testeo#############################################################################
-                            Toast.makeText(this, "Usuario registrado con éxito", Toast.LENGTH_SHORT).show();
-                            nameText.setText("");
-                            passwordText.setText("");
-                            mailText.setText("");
-                            checkBox1.setChecked(false);
-                            checkBox2.setChecked(false);
-                        }else {
-                            //Connection con = ConectionDDBB.obtainConnection(true); // MIRAR!!!!
-                            String maxId = String.valueOf(getMaxUserId()+1);
-                            createUser(maxId, name, mail, password, "1");
-                            //Usuario usuario = new Usuario(id, name, mail, password, id);
-                           // boolean isRegistered = Usuario.insertarUsuario(usuario, con);     // MIRAR!!!
-                            //if (isRegistered) {
-                                Toast.makeText(this, "Usuario registrado con éxito", Toast.LENGTH_SHORT).show();
-                                // Limpia los campos
-                                nameText.setText("");
-                                passwordText.setText("");
-                                mailText.setText("");
-                                checkBox1.setChecked(false);
-                                checkBox2.setChecked(false);
-                                id = id + 1;
-                            }/* else {
-                                Toast.makeText(this, "Error al registrar usuario", Toast.LENGTH_SHORT).show();
-                                // Limpia los campos
-                                nameText.setText("");
-                                passwordText.setText("");
-                                mailText.setText("");
-                                checkBox1.setChecked(false);
-                                checkBox2.setChecked(false);
-                            }}*/
-                    } catch (Exception e) {
-                        System.out.println(e.toString());
+            registerButton.setEnabled(false);
+
+            RegisterRequest request = new RegisterRequest(nombre, correo, password);
+            RetrofitClient.getApi().registrar(request).enqueue(new Callback<AuthResponse>() {
+                @Override
+                public void onResponse(Call<AuthResponse> call, Response<AuthResponse> response) {
+                    registerButton.setEnabled(true);
+                    if (response.isSuccessful()) {
+                        Toast.makeText(RegisterActivity.this, "Cuenta creada. Ya puedes iniciar sesión.", Toast.LENGTH_SHORT).show();
+                        startActivity(new Intent(RegisterActivity.this, LoginActivity.class));
+                        finish();
+                    } else {
+                        // p. ej. 409 Conflict si el correo ya existe (a
+                        // implementar en el futuro UsuarioService)
+                        Toast.makeText(RegisterActivity.this, "No se pudo crear la cuenta (¿correo ya registrado?)", Toast.LENGTH_LONG).show();
                     }
-
-                    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
                 }
-        });
-        // Configura el botón de inicio de sesión
-        Button loginButton = findViewById(R.id.loginButton);
-        loginButton.setOnClickListener(v -> {
-            // Cambia a la actividad de inicio de sesión
-            Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
-            startActivity(intent);
-            finish();
-        });
 
-    }
-    private int getMaxUserId() {
-        int maxId = 0; // Empieza desde 0 asumiendo que no hay IDs negativos
-        try {
-            for (int i = 0; i < usuarios.length(); i++) {
-                JSONObject usuario = usuarios.getJSONObject(i);
-                int currentId = usuario.getInt("id");
-                if (currentId > maxId) {
-                    maxId = currentId;
+                @Override
+                public void onFailure(Call<AuthResponse> call, Throwable t) {
+                    registerButton.setEnabled(true);
+                    Log.e(TAG, "Fallo de red al registrar", t);
+                    Toast.makeText(RegisterActivity.this, "No se pudo conectar con el servidor", Toast.LENGTH_SHORT).show();
                 }
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return maxId;
-    }
-    public void createUser(String id, String name, String email, String password, String inventoryId) {
-        OkHttpClient client = new OkHttpClient();
-        RequestBody formBody = new FormBody.Builder()
-                .add("id", id)
-                .add("nombre", name)
-                .add("correo", email)
-                .add("pass", password)
-                .add("inventario", inventoryId)
-                .build();
-        Request request = new Request.Builder()
-                .url("http://192.168.116.180:8080/ServerExampleUbicomp-1.0-SNAPSHOT/addUsuario")
-                .post(formBody)
-                .build();
-
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                e.printStackTrace();
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                if (response.isSuccessful()) {
-                    String responseData = response.body().string();
-                    Log.d("HTTP_POST", "Response from server: " + responseData);
-                } else {
-                    Log.d("HTTP_POST", "Failed to connect to server");
-                }
-            }
+            });
         });
     }
-    private void loadUsuarios(){
-        String url = "http://192.168.116.180:8080/ServerExampleUbicomp-1.0-SNAPSHOT/databaseAction";
-        ServerConnectionThread.clase = "RegisterActivity";
-        ServerConnectionThread thread = new ServerConnectionThread(this, url);
-        try {
-            thread.join();
-        }catch (InterruptedException e){}
-    }
-
-    public void handleJsonResponse(String jsonResponse) {
-        try {
-            JSONObject jsonObject = new JSONObject(jsonResponse);
-            if (jsonObject.has("usuarios")) {
-                JSONArray jsonUsuarios = jsonObject.getJSONArray("usuarios");
-                usuarios = jsonUsuarios;
-            }
-            // Añade más secciones según sea necesario
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
-
-
-    /*// Clase interna para representar un usuario
-    static class User {
-        String name;
-        String password;
-        String telefono;
-        String checkBoxSelection;
-
-        public User(String name, String password, String telefono, String checkBoxSelection) {
-            this.name = name;
-            this.password = password;
-            this.telefono = telefono;
-            this.checkBoxSelection = checkBoxSelection;
-        }
-    }*/
 }
-
