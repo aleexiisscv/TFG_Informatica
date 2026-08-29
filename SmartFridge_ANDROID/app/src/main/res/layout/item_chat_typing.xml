@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Indicador de "escribiendo".
+
+    Se dibuja como una burbuja entrante más, con la misma forma y el
+    mismo color que las respuestas reales, para que la transición al
+    llegar el texto no produzca un salto visual: la burbuja ya está en su
+    sitio y solo cambia su contenido.
+
+    Es una fila del RecyclerView y no una vista flotante sobre la lista.
+    Así hereda gratis el anclaje al final, el scroll y las animaciones de
+    inserción y borrado.
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingTop="@dimen/space_xs"
+    android:paddingBottom="@dimen/space_xs">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="start"
+        android:background="@drawable/bg_bubble_in"
+        android:backgroundTint="?attr/colorSurfaceContainerHigh"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/space_m"
+        android:paddingTop="12dp"
+        android:paddingEnd="@dimen/space_m"
+        android:paddingBottom="12dp">
+
+        <com.google.android.material.progressindicator.CircularProgressIndicator
+            android:id="@+id/typingIndicator"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:indeterminate="true"
+            app:indicatorColor="?attr/colorPrimary"
+            app:indicatorSize="16dp"
+            app:trackThickness="2dp" />
+
+        <TextView
+            android:id="@+id/typingText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/space_s"
+            android:text="@string/assistant_thinking"
+            android:textAppearance="?attr/textAppearanceBodyMedium"
+            android:textColor="?attr/colorOnSurfaceVariant" />
+    </LinearLayout>
+</FrameLayout>

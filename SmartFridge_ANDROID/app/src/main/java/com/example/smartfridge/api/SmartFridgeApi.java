@@ -3,6 +3,8 @@ package com.example.smartfridge.api;
 import java.util.List;
 
 import com.example.smartfridge.api.dto.AuthResponse;
+import com.example.smartfridge.api.dto.ChatRequestDto;
+import com.example.smartfridge.api.dto.ChatResponseDto;
 import com.example.smartfridge.api.dto.InventarioDto;
 import com.example.smartfridge.api.dto.LoginRequest;
 import com.example.smartfridge.api.dto.ProductoDto;
@@ -47,6 +49,17 @@ public interface SmartFridgeApi {
     // --- Registros (solo lectura) ---
     @GET("api/registros")
     Call<List<RegistroDto>> listarRegistros(@Query("tipo") String tipoRegistro);
+
+    // --- Asistente conversacional (Fase 11) ---
+    /**
+     * Consulta al agente RAG. A diferencia del resto de endpoints, esta
+     * llamada puede tardar VARIOS SEGUNDOS: el backend recopila el
+     * contexto del frigorífico y espera a que Gemini genere la
+     * respuesta. Por eso RetrofitClient define un readTimeout mucho más
+     * largo que los 10 s que bastaban para los endpoints de datos.
+     */
+    @POST("api/asistente/chat")
+    Call<ChatResponseDto> chat(@Body ChatRequestDto peticion);
 
     // --- Autenticación — PENDIENTE: endpoint aún no implementado en el backend ---
     @POST("api/auth/login")

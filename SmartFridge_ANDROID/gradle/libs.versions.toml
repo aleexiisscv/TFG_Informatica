@@ -25,6 +25,15 @@ coordinatorlayout = "1.2.0"
 # lottie 6.x: soporta minSdk 21 y trae el failure listener que usa
 # AsistenteFragment para caer al avatar vectorial si el JSON falla.
 lottie = "6.4.0"
+# --- Nuevo en la Fase 11 (asistente RAG) ---
+# lifecycle 2.8.7: ViewModel + LiveData. Es lo que permite que la
+# conversacion y la peticion en vuelo sobrevivan a una rotacion de
+# pantalla, algo que con el estado dentro del Fragment se perdia.
+lifecycle = "2.8.7"
+# markwon 4.6.2: render de Markdown a Spanned nativo. El asistente
+# responde en Markdown porque su contenido tipico son recetas (pasos
+# numerados, listas de ingredientes, negritas).
+markwon = "4.6.2"
 orgEclipsePahoAndroidService = "1.1.1"
 orgEclipsePahoClientMqttv3 = "1.2.5"
 # Bumped de 4.9.0 a 4.12.0: es la version minima que trae Retrofit 3.0.0
@@ -57,6 +66,10 @@ recyclerview = { group = "androidx.recyclerview", name = "recyclerview", version
 swiperefreshlayout = { group = "androidx.swiperefreshlayout", name = "swiperefreshlayout", version.ref = "swiperefresh" }
 coordinatorlayout = { group = "androidx.coordinatorlayout", name = "coordinatorlayout", version.ref = "coordinatorlayout" }
 lottie = { group = "com.airbnb.android", name = "lottie", version.ref = "lottie" }
+# --- Fase 11: asistente conversacional ---
+lifecycle-viewmodel = { group = "androidx.lifecycle", name = "lifecycle-viewmodel", version.ref = "lifecycle" }
+lifecycle-livedata = { group = "androidx.lifecycle", name = "lifecycle-livedata", version.ref = "lifecycle" }
+markwon-core = { group = "io.noties.markwon", name = "core", version.ref = "markwon" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

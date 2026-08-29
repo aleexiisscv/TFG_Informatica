@@ -74,6 +74,18 @@ dependencies {
     // y evita empaquetar un GIF o un video para el avatar.
     implementation(libs.lottie)
 
+    // --- Fase 11: asistente conversacional (RAG) ---
+    // ViewModel + LiveData. La conversacion y la peticion en vuelo viven
+    // en un AsistenteViewModel, no en el Fragment: una llamada al modelo
+    // tarda 15-30 s y girar el movil a mitad ya no la pierde.
+    implementation(libs.lifecycle.viewmodel)
+    implementation(libs.lifecycle.livedata)
+    // Render de Markdown. Gemini responde con negritas, listas y pasos
+    // numerados; sin esto el usuario veria los asteriscos en crudo.
+    // Markwon convierte a Spanned nativo: sin WebView, respetando la
+    // tipografia y el color del tema (y por tanto el color dinamico).
+    implementation(libs.markwon.core)
+
     // Dependencias para MQTT — SIN USO ACTUAL desde la app. Ver nota en
     // gradle/libs.versions.toml antes de decidir si se retiran.
     implementation(libs.org.eclipse.paho.client.mqttv3)

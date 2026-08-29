@@ -4,38 +4,79 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * Un mensaje de la conversacion.
+ * Un elemento de la conversación.
  *
- * <p>Modelo deliberadamente minimo y <b>inmutable</b>: los campos son
- * {@code final} y no hay setters. Un mensaje ya enviado no cambia, y
- * hacerlo inmutable garantiza que {@code DiffUtil} pueda comparar
- * instancias sin sorpresas (una lista cuyos elementos mutan por debajo
- * rompe el calculo de diferencias).</p>
+ * <p>Ampliado en la Fase 11 con un {@link Tipo}. En la fase anterior
+ * bastaba un booleano "delUsuario" porque solo había dos clases de
+ * burbuja; ahora la lista contiene además el indicador de "escribiendo"
+ * y los avisos de error, que son elementos de la conversación aunque no
+ * sean mensajes. Modelarlos como filas más de la lista —en vez de como
+ * vistas sueltas encima del RecyclerView— hace que el scroll, las
+ * animaciones y el anclaje al final funcionen igual para todos sin
+ * código adicional.</p>
  *
- * <p>El {@code id} autoincremental existe solo para que DiffUtil pueda
- * distinguir dos mensajes con el mismo texto —perfectamente posible si
- * el usuario repite una pregunta— sin confundirlos.</p>
+ * <p>Sigue siendo <b>inmutable</b>: los campos son {@code final} y no
+ * hay setters. Una lista cuyos elementos mutan por debajo rompería el
+ * cálculo de diferencias de {@code DiffUtil}.</p>
  */
 public final class ChatMessage {
 
     private static final AtomicLong SECUENCIA = new AtomicLong();
 
+    /** Identificador estable del indicador de escritura: nunca hay más de uno. */
+    private static final long ID_ESCRIBIENDO = -1L;
+
+    public enum Tipo {
+        /** Mensaje escrito por la persona. */
+        USUARIO,
+        /** Respuesta generada por el asistente (Markdown). */
+        ASISTENTE,
+        /** Placeholder mientras se espera la respuesta del modelo. */
+        ESCRIBIENDO,
+        /** Fallo de red o del servidor, con opción de reintentar. */
+        ERROR
+    }
+
     public final long id;
     public final String texto;
-    public final boolean delUsuario;
+    public final Tipo tipo;
 
-    private ChatMessage(String texto, boolean delUsuario) {
-        this.id = SECUENCIA.incrementAndGet();
+    private ChatMessage(long id, String texto, Tipo tipo) {
+        this.id = id;
         this.texto = texto;
-        this.delUsuario = delUsuario;
+        this.tipo = tipo;
     }
 
     public static ChatMessage delUsuario(String texto) {
-        return new ChatMessage(texto, true);
+        return new ChatMessage(SECUENCIA.incrementAndGet(), texto, Tipo.USUARIO);
     }
 
     public static ChatMessage delAsistente(String texto) {
-        return new ChatMessage(texto, false);
+        return new ChatMessage(SECUENCIA.incrementAndGet(), texto, Tipo.ASISTENTE);
+    }
+
+    /**
+     * Id fijo a propósito: al añadirlo y quitarlo siempre con el mismo
+     * identificador, DiffUtil lo trata como la MISMA fila apareciendo y
+     * desapareciendo, y la animación es limpia. Con un id nuevo cada vez,
+     * la lista insertaría y borraría filas distintas y parpadearía.
+     */
+    public static ChatMessage escribiendo() {
+        return new ChatMessage(ID_ESCRIBIENDO, "", Tipo.ESCRIBIENDO);
+    }
+
+    public static ChatMessage error(String texto) {
+        return new ChatMessage(SECUENCIA.incrementAndGet(), texto, Tipo.ERROR);
+    }
+
+    /**
+     * Solo los mensajes reales viajan al backend como historial: el
+     * indicador de escritura y los avisos de error son estado de la
+     * interfaz, no turnos de conversación. Enviarlos confundiría al
+     * modelo con turnos vacíos o con textos de error que él nunca dijo.
+     */
+    public boolean esTurnoDeConversacion() {
+        return tipo == Tipo.USUARIO || tipo == Tipo.ASISTENTE;
     }
 
     @Override
@@ -47,11 +88,11 @@ public final class ChatMessage {
             return false;
         }
         ChatMessage otro = (ChatMessage) o;
-        return id == otro.id && delUsuario == otro.delUsuario && Objects.equals(texto, otro.texto);
+        return id == otro.id && tipo == otro.tipo && Objects.equals(texto, otro.texto);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, texto, delUsuario);
+        return Objects.hash(id, texto, tipo);
     }
 }

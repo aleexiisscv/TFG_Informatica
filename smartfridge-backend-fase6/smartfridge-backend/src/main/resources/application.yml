@@ -58,3 +58,65 @@ smartfridge:
     username: ${MQTT_USERNAME:ubicua}
     password: ${MQTT_PASSWORD:ubicua}
     base-topic: frigorifico/#
+  gemini:
+    # Clave de API de Google AI Studio (https://aistudio.google.com/apikey).
+    # NUNCA se hardcodea: se resuelve en tiempo de arranque desde la
+    # variable de entorno GEMINI_API_KEY (mismo patrón que ya usan
+    # MQTT_USERNAME/MQTT_PASSWORD unas líneas más arriba en este mismo
+    # archivo), de modo que la clave real nunca llega a versionarse en Git.
+    api-key: ${GEMINI_API_KEY:AQ.Ab8RN6IIawWhMd1EhRjZ3I2A0uAm1ni7OFJC_BzZUNNqJilSPQ}
+
+    # Modelo principal: la Fase 9 requiere máxima velocidad + capacidad
+    # multimodal (imagen), ya que la latencia se suma al tiempo que el
+    # usuario tiene la puerta del frigorífico abierta.
+    model: ${GEMINI_MODEL:gemini-3.6-flash}
+
+    # Modelo de respaldo: si el modelo principal no está habilitado en la
+    # cuenta/región (cuota, deprecación, límite regional), VisionServiceImpl
+    # reintenta automáticamente con este modelo antes de fallar la petición.
+    fallback-model: ${GEMINI_FALLBACK_MODEL:gemini-2.5-flash}
+
+    api-base-url: ${GEMINI_API_BASE_URL:https://generativelanguage.googleapis.com/v1beta}
+
+  # ------------------------------------------------------------------
+  # ASISTENTE CONVERSACIONAL (Fase 11)
+  #
+  # Parámetros de comportamiento del agente RAG. Van aparte de
+  # "gemini" a propósito: aquello es "cómo conectar con Google"
+  # (clave, modelo, URL) y esto es "cómo debe comportarse nuestro
+  # asistente". Ajustar la longitud de una respuesta no debería
+  # obligar a tocar la configuración de conexión.
+  # ------------------------------------------------------------------
+  asistente:
+    # 0.0 sería determinista (bien para clasificar imágenes, robótico
+    # para conversar). Por encima de ~0.9 empiezan las alucinaciones,
+    # que es justo lo que el contexto inyectado intenta evitar.
+    temperature: ${ASISTENTE_TEMPERATURE:0.6}
+
+    # Presupuesto TOTAL de salida. Generoso porque los modelos
+    # "thinking" descuentan de aquí su razonamiento interno ANTES de
+    # escribir una sola palabra: quedarse corto no trunca la
+    # respuesta, devuelve un candidato VACÍO con
+    # finishReason=MAX_TOKENS (el bug depurado en la Fase 9). Una
+    # receta paso a paso ocupa fácilmente 400-600 tokens.
+    max-output-tokens: ${ASISTENTE_MAX_OUTPUT_TOKENS:2048}
+
+    # Turnos anteriores que se reenvían a Gemini en cada petición.
+    # Acota tamaño de prompt, coste y latencia: el contexto del
+    # frigorífico ya ocupa lo suyo y se reinyecta entero cada vez.
+    max-turnos-historial: ${ASISTENTE_MAX_TURNOS:10}
+
+    # Recorte por turno del historial, para que un mensaje muy largo
+    # (una receta completa devuelta hace cinco turnos) no se coma el
+    # presupuesto de los siguientes.
+    max-caracteres-turno: ${ASISTENTE_MAX_CARACTERES_TURNO:1500}
+
+logging:
+  level:
+    # El cliente HTTP de Gemini se extrajo de VisionServiceImpl a
+    # GeminiClient en la Fase 11: es esa clase la que ahora vuelca el
+    # JSON de petición y respuesta. Con este nivel se ve el prompt
+    # completo (contexto inyectado incluido) y el finishReason real.
+    com.smartfridge.gemini.GeminiClient: DEBUG
+    # Muestra el resumen del contexto capturado en cada turno.
+    com.smartfridge.service.ContextoFrigorificoServiceImpl: DEBUG

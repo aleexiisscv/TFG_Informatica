@@ -91,13 +91,15 @@
 
     <!-- Asistente -->
     <string name="assistant_title">Asistente</string>
-    <string name="assistant_greeting">Hola. Puedo consultarte el inventario, avisarte de caducidades y explicarte las alertas de los sensores. Que necesitas?</string>
+    <string name="assistant_greeting">Hola, soy SmartFridge AI. Veo lo que hay dentro del frigorifico en tiempo real: puedo proponerte recetas con lo que tienes, avisarte de lo que caduca y darte consejos de conservacion. Que te apetece?</string>
     <string name="assistant_hint">Escribe tu consulta</string>
     <string name="assistant_send">Enviar</string>
     <string name="assistant_mic">Dictar por voz</string>
     <string name="assistant_listening">Escuchando…</string>
     <string name="assistant_no_speech">El dictado por voz no esta disponible en este dispositivo</string>
-    <string name="assistant_not_wired">Aun no hay modelo conectado. Esta pantalla ya envia y pinta mensajes: falta enchufar el endpoint del backend.</string>
+    <string name="assistant_thinking">Pensando…</string>
+    <string name="assistant_error_network">No se pudo conectar con el asistente. Comprueba que el backend esta arrancado.</string>
+    <string name="assistant_error_server">El asistente no esta disponible ahora mismo. Vuelve a intentarlo en unos segundos.</string>
     <string name="assistant_avatar_desc">Avatar del asistente</string>
 
     <!-- Escaneo -->

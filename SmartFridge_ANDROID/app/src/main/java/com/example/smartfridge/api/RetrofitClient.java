@@ -35,9 +35,30 @@ public final class RetrofitClient {
 
     public static synchronized SmartFridgeApi getApi() {
         if (retrofit == null) {
+            // Los 10 s de readTimeout originales estaban pensados para
+            // endpoints de datos, que responden en milisegundos. El
+            // asistente de la Fase 11 no: el backend recopila el
+            // contexto del frigorífico y luego espera a que Gemini
+            // genere la respuesta —un modelo "thinking" razonando sobre
+            // una receta puede tardar tranquilamente 15-30 s—. Con el
+            // valor anterior, OkHttp abortaba la petición antes de que
+            // el backend hubiera terminado y el usuario veía siempre un
+            // error de red, aunque el servidor estuviera funcionando
+            // perfectamente.
+            //
+            // connectTimeout se mantiene corto a propósito: no poder
+            // ABRIR la conexión sigue siendo un fallo inmediato (IP mal
+            // configurada, backend apagado) y no debe hacer esperar al
+            // usuario un minuto para descubrirlo.
             OkHttpClient httpClient = new OkHttpClient.Builder()
                     .connectTimeout(10, TimeUnit.SECONDS)
-                    .readTimeout(10, TimeUnit.SECONDS)
+                    .readTimeout(60, TimeUnit.SECONDS)
+                    .writeTimeout(30, TimeUnit.SECONDS)
+                    // Tope absoluto de la llamada completa (DNS + conexión
+                    // + envío + lectura). Actúa de red de seguridad para
+                    // que una petición no pueda quedarse colgada
+                    // indefinidamente si el servidor va goteando bytes.
+                    .callTimeout(90, TimeUnit.SECONDS)
                     .build();
 
             retrofit = new Retrofit.Builder()
