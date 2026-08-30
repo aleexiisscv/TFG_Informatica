@@ -21,8 +21,31 @@ public class ChatRequestDto {
     public String mensaje;
     public List<ChatTurnoDto> historial;
 
+    /**
+     * Fase 12: fotografía opcional adjunta a ESTE turno, en Base64 sin
+     * saltos de línea. La imagen ya viene reescalada a 1024 px y
+     * comprimida a JPEG por {@code Imagenes}; enviarla en crudo
+     * multiplicaría por treinta el tamaño de la petición sin que el
+     * modelo de visión reconociera mejor el producto.
+     *
+     * <p>Gson omite los campos {@code null} por defecto, así que cuando
+     * no hay foto el JSON sale idéntico al de la fase anterior: los
+     * clientes antiguos y el backend nuevo siguen entendiéndose.</p>
+     */
+    public String imagenBase64;
+
+    /** MIME de la imagen. Siempre {@code image/jpeg} tras la compresión. */
+    public String imagenMimeType;
+
     public ChatRequestDto(String mensaje, List<ChatTurnoDto> historial) {
+        this(mensaje, historial, null, null);
+    }
+
+    public ChatRequestDto(String mensaje, List<ChatTurnoDto> historial,
+                          String imagenBase64, String imagenMimeType) {
         this.mensaje = mensaje;
         this.historial = historial;
+        this.imagenBase64 = imagenBase64;
+        this.imagenMimeType = imagenMimeType;
     }
 }

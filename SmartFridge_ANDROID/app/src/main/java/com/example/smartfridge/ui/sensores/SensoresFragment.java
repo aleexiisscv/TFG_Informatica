@@ -12,6 +12,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -32,20 +33,29 @@ import retrofit2.Response;
 /**
  * Seccion "Sensores y alertas". Sucesora de {@code SensorActivity}.
  *
- * <h3>Decisiones</h3>
+ * <h2>Decisiones</h2>
  * <ul>
  *   <li><b>Sondeo cada 5 s, no cada 2 s</b>, y detenido en
  *       {@code onPause} en lugar de en {@code onDestroy}. La version
  *       heredada seguia pidiendo datos con la pantalla apagada.</li>
  *   <li><b>Cada sensor tiene su tarjeta</b> con un
- *       {@code anomalyBadge} oculto. Ese indicador esta pensado para
- *       que el modulo de deteccion de anomalias lo encienda: la
- *       interfaz ya reserva el sitio, de modo que integrar la IA sera
- *       una llamada a {@code marcarAnomalia()} y no un rediseño.</li>
- *   <li><b>Las alertas se listan</b>, no se resumen en un Toast como
- *       hacia {@code alertBellButton}: un Toast desaparece y no deja
- *       consultar el historico reciente.</li>
+ *       {@code anomalyBadge} oculto, reservado al modulo de deteccion de
+ *       anomalias.</li>
+ *   <li><b>Las alertas se listan</b>, no se resumen en un Toast: un Toast
+ *       desaparece y no deja consultar el historico reciente.</li>
  * </ul>
+ *
+ * <h2>Accesibilidad (Fase 12)</h2>
+ * Cada tarjeta es UN solo punto de parada para el lector de pantalla, con
+ * una frase completa: <i>"Temperatura interior: 4.2 grados. Estado
+ * normal"</i>. Sin agrupar, TalkBack se detendria tres veces por sensor
+ * —icono, etiqueta y valor— y "4.2" leido suelto no significa nada.
+ *
+ * <p>Y sobre todo: el indicador de anomalia es un icono ROJO. Quien no
+ * distingue el rojo, o no ve la pantalla, no percibiria la alerta de
+ * ninguna forma. Repetir ese estado en la descripcion es lo que exige el
+ * criterio 1.4.1 de la WCAG: el color nunca puede ser el unico medio para
+ * transmitir informacion.
  */
 public class SensoresFragment extends Fragment {
 
@@ -57,9 +67,19 @@ public class SensoresFragment extends Fragment {
     private TextView lastUpdate;
     private TextView tempValue, humValue, waterValue, doorValue;
     private ImageView tempAnomaly, humAnomaly, waterAnomaly, doorAnomaly;
+    private View tempCard, humCard, waterCard, doorCard;
     private RecyclerView alertList;
     private TextView alertsEmpty;
     private AlertaAdapter alertaAdapter;
+
+    /**
+     * Ultimo valor y estado de cada sensor, para poder recomponer las
+     * descripciones habladas. Hacen falta porque el valor llega de
+     * /api/sensores y la anomalia de /api/registros: son dos respuestas
+     * distintas y la frase que oye el usuario necesita las dos.
+     */
+    private CharSequence valorTemp, valorHum, valorAgua, valorPuerta;
+    private boolean anomTemp, anomHum, anomAgua, anomPuerta;
 
     private final Handler handler = new Handler(Looper.getMainLooper());
     private Runnable tareaSondeo;
@@ -92,8 +112,20 @@ public class SensoresFragment extends Fragment {
         waterAnomaly = view.findViewById(R.id.waterAnomaly);
         doorAnomaly = view.findViewById(R.id.doorAnomaly);
 
+        tempCard = view.findViewById(R.id.tempCard);
+        humCard = view.findViewById(R.id.humCard);
+        waterCard = view.findViewById(R.id.waterCard);
+        doorCard = view.findViewById(R.id.doorCard);
+
         alertList = view.findViewById(R.id.alertList);
         alertsEmpty = view.findViewById(R.id.alertsEmpty);
+
+        String sinDato = getString(R.string.sensor_no_data);
+        valorTemp = sinDato;
+        valorHum = sinDato;
+        valorAgua = sinDato;
+        valorPuerta = sinDato;
+        refrescarDescripciones();
 
         alertaAdapter = new AlertaAdapter();
         alertList.setAdapter(alertaAdapter);
@@ -204,23 +236,29 @@ public class SensoresFragment extends Fragment {
             }
             switch (sensor.tipo) {
                 case "TEMPERATURA":
-                    tempValue.setText(getString(R.string.sensor_value_celsius, formatear(sensor.medicion)));
+                    valorTemp = getString(R.string.sensor_value_celsius, formatear(sensor.medicion));
+                    tempValue.setText(valorTemp);
                     break;
                 case "HUMEDAD":
-                    humValue.setText(getString(R.string.sensor_value_percent, formatear(sensor.medicion)));
+                    valorHum = getString(R.string.sensor_value_percent, formatear(sensor.medicion));
+                    humValue.setText(valorHum);
                     break;
                 case "AGUA":
-                    waterValue.setText(esUno(sensor.medicion)
+                    valorAgua = getString(esUno(sensor.medicion)
                             ? R.string.sensor_water_detected : R.string.sensor_water_clear);
+                    waterValue.setText(valorAgua);
                     // El sensor de agua es binario y su estado "1" YA es
                     // una anomalia por definicion: no hace falta esperar
                     // a un modelo para marcarlo.
-                    marcarAnomalia(waterAnomaly, esUno(sensor.medicion));
+                    anomAgua = esUno(sensor.medicion);
+                    marcarAnomalia(waterAnomaly, anomAgua);
                     break;
                 case "PUERTA":
-                    doorValue.setText(esUno(sensor.medicion)
+                    valorPuerta = getString(esUno(sensor.medicion)
                             ? R.string.sensor_door_open : R.string.sensor_door_closed);
-                    marcarAnomalia(doorAnomaly, esUno(sensor.medicion));
+                    doorValue.setText(valorPuerta);
+                    anomPuerta = esUno(sensor.medicion);
+                    marcarAnomalia(doorAnomaly, anomPuerta);
                     break;
                 default:
                     Log.w(TAG, "Tipo de sensor no reconocido: " + sensor.tipo);
@@ -233,15 +271,13 @@ public class SensoresFragment extends Fragment {
         lastUpdate.setText(ultima == null
                 ? getString(R.string.sensor_never_updated)
                 : getString(R.string.sensor_updated_at, Fechas.fechaHora(ultima)));
+        refrescarDescripciones();
     }
 
     private void pintarAlertas(List<RegistroDto> alertas) {
-        // El backend ya devuelve findByTipoRegistroOrderByFechaDesc, asi
-        // que basta con recortar: la mas reciente va primero.
         // Se copia a una lista nueva en lugar de pasar el subList: un
         // subList es una VISTA sobre la lista original, y ListAdapter
-        // conserva la referencia entre refrescos. Si la original cambia,
-        // el adaptador quedaria comparando contra datos ya mutados.
+        // conserva la referencia entre refrescos.
         List<RegistroDto> visibles = new ArrayList<>(
                 alertas.size() > MAX_ALERTAS_VISIBLES
                         ? alertas.subList(0, MAX_ALERTAS_VISIBLES)
@@ -254,26 +290,59 @@ public class SensoresFragment extends Fragment {
         // tarjetas. Cuando exista el detector de anomalias basado en la
         // serie temporal (tabla lectura_sensor), esta misma llamada
         // recibira su veredicto en lugar del registro puntual.
-        boolean hayTemp = false;
-        boolean hayHum = false;
+        anomTemp = false;
+        anomHum = false;
         for (RegistroDto alerta : visibles) {
             if ("TEMPERATURA".equals(alerta.sensorTipo)) {
-                hayTemp = true;
+                anomTemp = true;
             } else if ("HUMEDAD".equals(alerta.sensorTipo)) {
-                hayHum = true;
+                anomHum = true;
             }
         }
-        marcarAnomalia(tempAnomaly, hayTemp);
-        marcarAnomalia(humAnomaly, hayHum);
+        marcarAnomalia(tempAnomaly, anomTemp);
+        marcarAnomalia(humAnomaly, anomHum);
+        refrescarDescripciones();
     }
 
     /**
      * Punto de entrada unico para encender/apagar el indicador de
-     * anomalia de una tarjeta. Se deja publico a nivel de paquete a
+     * anomalia de una tarjeta. Se deja visible a nivel de paquete a
      * proposito: es la costura por la que entrara el modulo de IA.
      */
     void marcarAnomalia(ImageView badge, boolean hayAnomalia) {
         badge.setVisibility(hayAnomalia ? View.VISIBLE : View.GONE);
+    }
+
+    // ------------------------------------------------------------------
+    // Accesibilidad
+    // ------------------------------------------------------------------
+
+    private void refrescarDescripciones() {
+        if (getView() == null) {
+            return;
+        }
+        describir(tempCard, R.string.sensor_temperature, valorTemp, anomTemp);
+        describir(humCard, R.string.sensor_humidity, valorHum, anomHum);
+        describir(waterCard, R.string.sensor_water, valorAgua, anomAgua);
+        describir(doorCard, R.string.sensor_door, valorPuerta, anomPuerta);
+    }
+
+    /**
+     * Compone la frase que lee el lector de pantalla para una tarjeta.
+     *
+     * <p>Incluye SIEMPRE el estado, tambien cuando es normal. Anunciar la
+     * anomalia solo cuando existe obligaria al usuario a recordar que la
+     * ausencia de frase significa "todo bien", lo que es justo lo que no
+     * se puede pedir a quien no ve la pantalla.</p>
+     */
+    private void describir(View tarjeta, @StringRes int etiqueta, CharSequence valor, boolean anomalia) {
+        if (tarjeta == null) {
+            return;
+        }
+        tarjeta.setContentDescription(getString(R.string.a11y_sensor,
+                getString(etiqueta),
+                valor == null ? getString(R.string.sensor_no_data) : valor,
+                getString(anomalia ? R.string.a11y_estado_anomalia : R.string.a11y_estado_normal)));
     }
 
     private String formatear(@Nullable Float medicion) {

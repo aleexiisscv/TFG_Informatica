@@ -104,10 +104,13 @@
     <color name="nutri_on_dark">#1A1A1A</color>
     <color name="nutri_unknown">#8A9294</color>
 
-    <!-- Estado de sensor: verde/ambar/rojo son convenciones de alarma
-         industrial; tampoco se delegan al color dinamico. -->
-    <color name="state_ok">#2E7D32</color>
-    <color name="state_ok_container">#C8E6C9</color>
+    <!-- Estado de sensor: ambar y rojo son convenciones de alarma
+         industrial; no se delegan al color dinamico porque su
+         significado no puede depender del fondo de pantalla del
+         usuario. No hay un verde de "correcto": un distintivo
+         permanente por sensor seria ruido visual, y el estado normal ya
+         se comunica por la ausencia de aviso (y, para el lector de
+         pantalla, con la frase "Estado normal"). -->
     <color name="state_warn">#B26A00</color>
     <color name="state_warn_container">#FFE0B2</color>
     <color name="state_alert">#C62828</color>

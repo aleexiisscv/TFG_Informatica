@@ -108,7 +108,18 @@ public class AlertaAdapter extends ListAdapter<RegistroDto, AlertaAdapter.Alerta
         void enlazar(RegistroDto registro) {
             alertIcon.setImageResource(iconoDe(registro.sensorTipo));
             alertText.setText(descripcionDe(registro.sensorTipo));
-            alertTime.setText(Fechas.fechaHora(registro.fecha));
+            String cuando = Fechas.fechaHora(registro.fecha);
+            alertTime.setText(cuando);
+
+            // Accesibilidad: la fila es un unico punto de parada (ver
+            // noHideDescendants en item_alerta.xml). Se antepone la
+            // palabra "Alerta" porque el hecho de serlo lo transmite hoy
+            // el color rojo de la tarjeta, y el color no llega a quien no
+            // lo distingue o no ve la pantalla.
+            itemView.setContentDescription(itemView.getContext().getString(
+                    R.string.a11y_alerta,
+                    itemView.getContext().getString(descripcionDe(registro.sensorTipo)),
+                    cuando));
         }
     }
 }

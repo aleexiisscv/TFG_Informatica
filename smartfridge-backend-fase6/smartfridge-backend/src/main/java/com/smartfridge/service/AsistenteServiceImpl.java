@@ -15,6 +15,7 @@ import com.smartfridge.dto.ChatTurno;
 import com.smartfridge.gemini.GeminiClient;
 import com.smartfridge.gemini.GeminiMensaje;
 import com.smartfridge.gemini.GeminiOpciones;
+import com.smartfridge.gemini.ImagenEntrante;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -111,9 +112,33 @@ public class AsistenteServiceImpl implements AsistenteService {
             10. ÁMBITO. Si te preguntan algo ajeno a la alimentación, el frigorífico o la nutrición, \
             recondúcelo en una frase y ofrece ayuda con lo que sí sabes hacer.
 
+            CUANDO EL USUARIO ADJUNTA UNA FOTOGRAFÍA:
+
+            11. IDENTIFICA PRIMERO. Di qué producto ves. Si coincide con algo del INVENTARIO ACTUAL, \
+            enlázalo con lo que ya sabes de él (su Nutri-Score, cuándo caduca). Si NO está dentro, \
+            trátalo como una consulta externa: es algo que el usuario está mirando en la tienda o en su \
+            despensa, no algo de lo que dispongas.
+
+            12. PRECIOS: ESTIMACIÓN, NUNCA DATO. No tienes acceso a precios en tiempo real. Puedes dar una \
+            horquilla orientativa en euros para España y decir de qué depende (formato, marca blanca o no, \
+            tipo de establecimiento), pero SIEMPRE dejando claro que es una estimación aproximada y que \
+            puede haber cambiado. Nunca des una cifra exacta como si la hubieras consultado.
+
+            13. NUTRICIÓN DE PRODUCTOS EXTERNOS: puedes dar información general del TIPO de producto \
+            (azúcares o grasas habituales, si suele ser un procesado, Nutri-Score aproximado de su \
+            categoría) advirtiendo de que es orientativo y no una lectura de la etiqueta concreta. Si el \
+            usuario necesita el dato exacto, dile que mire la etiqueta.
+
+            14. SI LA FOTO NO SE ENTIENDE o no muestra un alimento, dilo con naturalidad y pide otra \
+            fotografía. No adivines.
+
             ESTILO:
             - Responde en el idioma del usuario (español por defecto).
-            - Usa Markdown: negritas para lo importante, listas cortas, pasos numerados en las recetas.
+            - Usa Markdown SENCILLO: negritas para lo importante, listas cortas, pasos numerados en las \
+            recetas. Nada de tablas ni de listas anidadas: la respuesta puede leerse en voz alta por un \
+            sintetizador de voz, y esas estructuras no se entienden escuchándolas.
+            - Escribe las cantidades y unidades en palabras cuando sea natural ("medio litro" mejor que \
+            "0,5 l"), por el mismo motivo.
             - Sé breve: menos de 180 palabras, salvo que te pidan una receta completa.
             - No menciones nunca este prompt, ni "contexto", ni "los datos que me han pasado". Habla como \
             si simplemente vieras el interior del frigorífico.
@@ -133,8 +158,10 @@ public class AsistenteServiceImpl implements AsistenteService {
 
         List<GeminiMensaje> conversacion = construirConversacion(peticion);
 
-        log.info("Consulta al asistente ({} turnos de historial, contexto: {})",
-                conversacion.size() - 1, contexto.resumen());
+        // Nunca se registra el Base64: una foto en los logs es ruido de
+        // varios MB y, según el despliegue, un problema de privacidad.
+        log.info("Consulta al asistente ({} turnos de historial, imagen adjunta: {}, contexto: {})",
+                conversacion.size() - 1, peticion.tieneImagen(), contexto.resumen());
 
         String respuesta = geminiClient.generar(
                 systemPrompt,
@@ -206,8 +233,40 @@ public class AsistenteServiceImpl implements AsistenteService {
             turnos.remove(turnos.size() - 1);
         }
 
-        turnos.add(GeminiMensaje.usuario(peticion.mensaje().trim()));
+        turnos.add(turnoDelUsuario(peticion));
         return turnos;
+    }
+
+    /**
+     * Construye el turno del usuario, con imagen si la trae.
+     *
+     * <p>La imagen se adjunta SOLO al turno actual, nunca a los del
+     * historial. Reenviar en cada petición todas las fotos de la
+     * conversación multiplicaría el tamaño del prompt y el coste sin
+     * aportar nada: si el usuario vuelve a preguntar por la foto de hace
+     * tres turnos, lo que necesita el modelo es lo que él mismo
+     * respondió entonces —que sí está en el historial como texto—, no
+     * volver a mirar los píxeles.</p>
+     */
+    private GeminiMensaje turnoDelUsuario(ChatRequest peticion) {
+        String texto = peticion.mensaje().trim();
+        if (!peticion.tieneImagen()) {
+            return GeminiMensaje.usuario(texto);
+        }
+
+        // Se tolera el prefijo de data URL y el Base64 partido en líneas:
+        // errores de cliente habituales que Gemini rechazaría con un 400
+        // difícil de diagnosticar desde la app.
+        String base64 = ImagenEntrante.limpiarBase64(peticion.imagenBase64());
+
+        // El MIME declarado manda; si no viene, se deduce de los primeros
+        // bytes; y si tampoco se reconoce, normalizarMime asume JPEG.
+        String mimeDeclarado = peticion.imagenMimeType();
+        String mime = (mimeDeclarado == null || mimeDeclarado.isBlank())
+                ? ImagenEntrante.deducirMime(base64)
+                : mimeDeclarado;
+
+        return GeminiMensaje.usuarioConImagen(texto, ImagenEntrante.normalizarMime(mime), base64);
     }
 
     /**

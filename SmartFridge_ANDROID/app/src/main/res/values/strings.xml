@@ -35,7 +35,6 @@
     <string name="auth_error_credentials">Correo o contrasena incorrectos</string>
     <string name="auth_error_duplicate">No se pudo crear la cuenta (correo ya registrado?)</string>
     <string name="auth_ok_registered">Cuenta creada. Ya puedes iniciar sesion</string>
-    <string name="auth_ok_login">Sesion iniciada</string>
     <string name="auth_logout">Cerrar sesion</string>
 
     <!-- Inventario -->
@@ -61,7 +60,6 @@
 
     <!-- Sensores -->
     <string name="sensors_title">Sensores y alertas</string>
-    <string name="sensors_subtitle">Estado en tiempo real del frigorifico</string>
     <string name="sensor_temperature">Temperatura</string>
     <string name="sensor_humidity">Humedad</string>
     <string name="sensor_water">Fuga de agua</string>
@@ -100,7 +98,26 @@
     <string name="assistant_thinking">Pensando…</string>
     <string name="assistant_error_network">No se pudo conectar con el asistente. Comprueba que el backend esta arrancado.</string>
     <string name="assistant_error_server">El asistente no esta disponible ahora mismo. Vuelve a intentarlo en unos segundos.</string>
-    <string name="assistant_avatar_desc">Avatar del asistente</string>
+
+    <!-- Fase 12: accesibilidad y chat multimodal -->
+    <string name="assistant_attach">Adjuntar una foto</string>
+    <string name="assistant_attach_source">De donde quieres sacar la foto?</string>
+    <string name="assistant_attach_camera">Hacer una foto ahora</string>
+    <string name="assistant_attach_gallery">Elegir una foto guardada</string>
+    <string name="assistant_attach_preview">Foto adjunta a tu pregunta</string>
+    <string name="assistant_attach_remove">Quitar la foto adjunta</string>
+    <string name="assistant_attach_ready">Foto lista para enviar</string>
+    <string name="assistant_attach_added">Foto adjuntada. Escribe tu pregunta o pulsa enviar.</string>
+    <string name="assistant_attach_failed">No se pudo preparar la foto. Intentalo de nuevo.</string>
+    <string name="assistant_attach_default_question">Que es este producto?</string>
+    <string name="assistant_message_has_image">Enviaste una foto con este mensaje</string>
+
+    <string name="assistant_tts_enable">Leer las respuestas en voz alta</string>
+    <string name="assistant_tts_disable">Dejar de leer en voz alta</string>
+    <string name="assistant_tts_on">Lectura en voz alta activada</string>
+    <string name="assistant_tts_off">Lectura en voz alta desactivada</string>
+    <string name="assistant_tts_unavailable">Este dispositivo no tiene voz en espanol instalada</string>
+    <string name="assistant_tts_screenreader_note">Tu lector de pantalla ya lee las respuestas, asi que la voz del asistente empieza apagada. Puedes activarla si la quieres igualmente.</string>
 
     <!-- Escaneo -->
     <string name="scan_title">Escanear producto</string>
@@ -138,10 +155,25 @@
     <string name="stats_exits">Salidas: %1$d</string>
     <string name="stats_empty">No hay registros posteriores a esa fecha</string>
 
+    <!--
+        Cadenas leidas por el lector de pantalla. Se separan del resto a
+        proposito: describen lo que TalkBack DICE, no lo que se ve, y se
+        redactan como frases completas porque se escuchan sueltas, sin el
+        contexto visual que las rodea en pantalla.
+    -->
+    <string name="a11y_item_inventario">%1$s. %2$s. %3$s</string>
+    <string name="a11y_nutriscore_sin_dato">Sin Nutri-Score</string>
+    <string name="a11y_sensor">%1$s: %2$s. %3$s</string>
+    <string name="a11y_estado_normal">Estado normal</string>
+    <string name="a11y_estado_anomalia">Atencion: anomalia detectada</string>
+    <string name="a11y_alerta">Alerta. %1$s. %2$s</string>
+    <string name="a11y_barra_nutriscore">Nutri-Score %1$s: %2$d por ciento</string>
+    <string name="a11y_pensando">El asistente esta pensando la respuesta</string>
+    <string name="a11y_insight_ia">Sugerencia de la inteligencia artificial: %1$s</string>
+
     <!-- Comunes -->
     <string name="common_back">Volver</string>
     <string name="common_cancel">Cancelar</string>
     <string name="common_network_error">No se pudo conectar con el servidor</string>
     <string name="common_alerts_desc">Alertas</string>
-    <string name="common_more_options">Mas opciones</string>
 </resources>

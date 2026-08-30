@@ -1,22 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Asistente virtual.
+    Asistente conversacional accesible (Fase 12).
 
-    Tres zonas, tal y como exige el diseño:
-      1. Cabecera con avatar. Contiene DOS vistas superpuestas: un
-         vector estatico (siempre presente) y una LottieAnimationView
-         que solo se muestra si en tiempo de ejecucion se encuentra la
-         animacion en assets/. Asi la pantalla nunca queda "coja" si el
-         .json no esta, y el diseñador puede sustituir la animacion sin
-         tocar codigo Java.
-      2. Zona central de conversacion: RecyclerView con dos tipos de
-         vista (burbuja entrante / saliente).
-      3. Barra inferior de entrada: campo de texto + microfono
-         prominente para dictado.
+    Cuatro zonas: avatar, conversación, foto adjunta (oculta hasta que
+    hay una) y barra de entrada.
 
-    El paddingBottom = list_bottom_inset reserva el alto de la
-    BottomNavigationView del shell, que se dibuja POR ENCIMA del
-    NavHost; sin el, la barra de escritura quedaria tapada.
+    CRITERIOS DE ACCESIBILIDAD APLICADOS AQUÍ
+    · Todos los controles tienen 48dp de área táctil como mínimo — el
+      umbral que recomiendan tanto Material Design como la WCAG 2.2
+      (criterio 2.5.8) y que marca la diferencia entre poder usar la app
+      y no poder con temblor o poca precisión motora.
+    · Todo lo interactivo lleva contentDescription redactado como una
+      ACCIÓN ("Adjuntar una foto"), no como el nombre del icono
+      ("clip"): es lo que TalkBack lee en voz alta.
+    · Los adornos (el avatar) se marcan importantForAccessibility="no"
+      para que el lector de pantalla no se detenga en ellos.
+    · La línea de estado es una live region: TalkBack anuncia
+      "Escuchando…" sin que el usuario tenga que ir a buscarla.
+    · Ningún tamaño de texto se fija en dp: todos salen de
+      textAppearance, en sp, así que respetan el ajuste de "tamaño de
+      fuente" del sistema, que es la primera herramienta que usa una
+      persona con baja visión.
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -31,14 +35,16 @@
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:fitsSystemWindows="true"
+        app:menu="@menu/menu_asistente"
         app:title="@string/assistant_title"
         app:titleTextAppearance="?attr/textAppearanceHeadlineSmall" />
 
-    <!-- ===== 1. Avatar ===== -->
+    <!-- ===== Avatar: decorativo, invisible para el lector de pantalla ===== -->
     <FrameLayout
         android:id="@+id/avatarContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:importantForAccessibility="no"
         android:paddingTop="@dimen/space_s"
         android:paddingBottom="@dimen/space_s">
 
@@ -47,7 +53,7 @@
             android:layout_width="@dimen/avatar_size"
             android:layout_height="@dimen/avatar_size"
             android:layout_gravity="center_horizontal"
-            android:contentDescription="@string/assistant_avatar_desc"
+            android:contentDescription="@null"
             android:src="@drawable/ic_avatar_assistant"
             app:tint="?attr/colorPrimary" />
 
@@ -56,25 +62,32 @@
             android:layout_width="@dimen/avatar_size"
             android:layout_height="@dimen/avatar_size"
             android:layout_gravity="center_horizontal"
-            android:contentDescription="@string/assistant_avatar_desc"
+            android:contentDescription="@null"
             android:visibility="gone"
-            app:lottie_autoPlay="true"
+            app:lottie_autoPlay="false"
             app:lottie_loop="true" />
     </FrameLayout>
 
+    <!--
+        accessibilityLiveRegion="polite": cuando este texto cambia a
+        "Escuchando…", TalkBack lo anuncia solo, sin robarle el foco al
+        usuario. Sin esto, quien no ve la pantalla no tendría forma de
+        saber que el micrófono está abierto.
+    -->
     <TextView
         android:id="@+id/assistantStatus"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:accessibilityLiveRegion="polite"
         android:gravity="center"
         android:paddingBottom="@dimen/space_s"
-        android:textAppearance="?attr/textAppearanceLabelMedium"
+        android:textAppearance="?attr/textAppearanceLabelLarge"
         android:textColor="?attr/colorPrimary"
         android:visibility="invisible"
         tools:text="Escuchando…"
         tools:visibility="visible" />
 
-    <!-- ===== 2. Conversacion ===== -->
+    <!-- ===== Conversación ===== -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/chatList"
         android:layout_width="match_parent"
@@ -87,27 +100,83 @@
         android:paddingBottom="@dimen/space_s"
         tools:listitem="@layout/item_chat_in" />
 
-    <!-- ===== 3. Entrada ===== -->
+    <!-- ===== Foto adjunta (oculta hasta que hay una) ===== -->
+    <LinearLayout
+        android:id="@+id/attachmentPreview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/colorSurfaceContainerHigh"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/screen_padding_h"
+        android:paddingTop="@dimen/space_s"
+        android:paddingEnd="@dimen/space_s"
+        android:paddingBottom="@dimen/space_s"
+        android:visibility="gone"
+        tools:visibility="visible">
+
+        <ImageView
+            android:id="@+id/attachmentThumb"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:background="@drawable/bg_thumb"
+            android:clipToOutline="true"
+            android:contentDescription="@string/assistant_attach_preview"
+            android:scaleType="centerCrop"
+            tools:src="@drawable/ic_image_24" />
+
+        <TextView
+            android:id="@+id/attachmentLabel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/space_m"
+            android:layout_weight="1"
+            android:text="@string/assistant_attach_ready"
+            android:textAppearance="?attr/textAppearanceBodyMedium"
+            android:textColor="?attr/colorOnSurface" />
+
+        <ImageButton
+            android:id="@+id/removeAttachment"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/assistant_attach_remove"
+            android:src="@drawable/ic_close_24"
+            app:tint="?attr/colorOnSurfaceVariant" />
+    </LinearLayout>
+
+    <!-- ===== Barra de entrada ===== -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:paddingStart="@dimen/screen_padding_h"
+        android:paddingStart="@dimen/space_s"
         android:paddingTop="@dimen/space_s"
         android:paddingEnd="@dimen/screen_padding_h"
         android:paddingBottom="@dimen/space_s">
 
+        <ImageButton
+            android:id="@+id/attachButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/assistant_attach"
+            android:src="@drawable/ic_image_24"
+            app:tint="?attr/colorPrimary" />
+
         <LinearLayout
             android:layout_width="0dp"
-            android:layout_height="56dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/space_xs"
             android:layout_weight="1"
             android:background="@drawable/bg_input_bar"
             android:backgroundTint="?attr/colorSurfaceContainerHigh"
             android:gravity="center_vertical"
+            android:minHeight="56dp"
             android:orientation="horizontal"
             android:paddingStart="@dimen/space_m"
-            android:paddingEnd="@dimen/space_s">
+            android:paddingEnd="@dimen/space_xs">
 
             <EditText
                 android:id="@+id/messageInput"
@@ -119,14 +188,15 @@
                 android:imeOptions="actionSend"
                 android:inputType="textCapSentences|textMultiLine"
                 android:maxLines="4"
+                android:minHeight="48dp"
                 android:textAppearance="?attr/textAppearanceBodyLarge"
                 android:textColor="?attr/colorOnSurface"
                 android:textColorHint="?attr/colorOnSurfaceVariant" />
 
             <ImageButton
                 android:id="@+id/sendButton"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="@string/assistant_send"
                 android:src="@drawable/ic_send_24"
@@ -134,11 +204,10 @@
         </LinearLayout>
 
         <!--
-            El microfono es un FAB y no un ImageButton a proposito: el
-            dictado por voz es la via de entrada PREFERENTE cuando el
-            usuario esta cocinando y no puede escribir. En M3 la
-            jerarquia se comunica con la forma del control, no solo con
-            el tamaño del icono.
+            El micrófono es un FAB (56dp) y no un ImageButton a propósito:
+            el dictado es la vía de entrada preferente para quien no puede
+            teclear cómodamente, y en Material la jerarquía se comunica
+            con la forma del control, no solo con el tamaño del icono.
         -->
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/micButton"

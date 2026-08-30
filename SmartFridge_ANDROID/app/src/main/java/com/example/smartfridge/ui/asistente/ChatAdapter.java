@@ -1,5 +1,8 @@
 package com.example.smartfridge.ui.asistente;
 
+import android.content.Context;
+import android.content.res.ColorStateList;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -138,7 +141,7 @@ public class ChatAdapter extends ListAdapter<ChatMessage, RecyclerView.ViewHolde
         }
     }
 
-    /** Burbuja del usuario: texto tal cual. */
+    /** Burbuja del usuario: texto tal cual, más la marca de foto adjunta. */
     static class TextoPlanoViewHolder extends RecyclerView.ViewHolder {
 
         private final TextView bubbleText;
@@ -149,7 +152,34 @@ public class ChatAdapter extends ListAdapter<ChatMessage, RecyclerView.ViewHolde
         }
 
         void enlazar(ChatMessage mensaje) {
+            Context ctx = itemView.getContext();
             bubbleText.setText(mensaje.texto);
+
+            if (mensaje.llevaImagen) {
+                // Un icono al inicio de la burbuja indica que ese turno
+                // llevaba una fotografía. La marca se restablece SIEMPRE
+                // en la rama else: la vista se recicla, y sin limpiarla
+                // el icono reaparecería en mensajes que no llevan foto —
+                // el error clásico de RecyclerView.
+                bubbleText.setCompoundDrawablesRelativeWithIntrinsicBounds(
+                        R.drawable.ic_image_24, 0, 0, 0);
+                bubbleText.setCompoundDrawableTintList(ColorStateList.valueOf(
+                        colorDeTema(ctx, com.google.android.material.R.attr.colorOnPrimaryContainer)));
+                // El icono es invisible para un lector de pantalla, así
+                // que la información se repite en la descripción: sin
+                // esto, quien no ve la pantalla no sabría que envió foto.
+                bubbleText.setContentDescription(mensaje.texto + ". "
+                        + ctx.getString(R.string.assistant_message_has_image));
+            } else {
+                bubbleText.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, 0, 0);
+                bubbleText.setContentDescription(null);
+            }
+        }
+
+        private static int colorDeTema(Context ctx, int atributo) {
+            TypedValue valor = new TypedValue();
+            ctx.getTheme().resolveAttribute(atributo, valor, true);
+            return valor.data;
         }
     }
 

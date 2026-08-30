@@ -118,7 +118,8 @@ public class InventarioAdapter extends ListAdapter<InventarioDto, InventarioAdap
                             : ctx.getString(R.string.item_nutriscore,
                                     NutriScoreUi.etiqueta(unidad.nutriScore)));
 
-            expiryChip.setText(Fechas.textoCaducidad(ctx, unidad.fechaCaducidad));
+            String caducidad = Fechas.textoCaducidad(ctx, unidad.fechaCaducidad);
+            expiryChip.setText(caducidad);
             pintarUrgencia(ctx, Fechas.urgencia(unidad.fechaCaducidad));
 
             // ==== Hueco reservado a la IA ====
@@ -127,6 +128,18 @@ public class InventarioAdapter extends ListAdapter<InventarioDto, InventarioAdap
             // mostrarInsightIa(). La tarjeta ya tiene el espacio hecho:
             // integrar IA no obligara a rediseñar la fila.
             ocultarInsightIa();
+
+            // ==== Accesibilidad (Fase 12) ====
+            // El layout marca el contenido como noHideDescendants, asi que
+            // la tarjeta entera es UN punto de parada para el lector de
+            // pantalla y esta es la frase que se lee. Sin ella, TalkBack
+            // se detendria tres veces por producto y leeria "B" suelto,
+            // que no significa nada sin saber de que producto habla.
+            String score = NutriScoreUi.normalizar(unidad.nutriScore) == null
+                    ? ctx.getString(R.string.a11y_nutriscore_sin_dato)
+                    : ctx.getString(R.string.item_nutriscore, NutriScoreUi.etiqueta(unidad.nutriScore));
+            itemView.setContentDescription(ctx.getString(
+                    R.string.a11y_item_inventario, unidad.nombreProducto, score, caducidad));
         }
 
         private void pintarUrgencia(android.content.Context ctx, int urgencia) {
@@ -161,10 +174,20 @@ public class InventarioAdapter extends ListAdapter<InventarioDto, InventarioAdap
             return valor.data;
         }
 
-        /** Punto de extension para la fase de IA. */
+        /**
+         * Punto de extension para la fase de IA.
+         *
+         * <p>Anade la sugerencia a la descripcion hablada ademas de
+         * pintarla: el contenido de la fila esta oculto al lector de
+         * pantalla (noHideDescendants), asi que un texto que solo se
+         * escribiera en el TextView seria invisible para quien no ve.</p>
+         */
         void mostrarInsightIa(String texto) {
             aiInsightText.setText(texto);
             aiInsightRow.setVisibility(View.VISIBLE);
+            CharSequence actual = itemView.getContentDescription();
+            itemView.setContentDescription(actual + ". "
+                    + itemView.getContext().getString(R.string.a11y_insight_ia, texto));
         }
 
         private void ocultarInsightIa() {

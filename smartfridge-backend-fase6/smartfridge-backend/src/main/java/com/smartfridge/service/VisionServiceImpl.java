@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import com.smartfridge.gemini.GeminiClient;
 import com.smartfridge.gemini.GeminiMensaje;
 import com.smartfridge.gemini.GeminiOpciones;
+import com.smartfridge.gemini.ImagenEntrante;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -64,7 +65,7 @@ public class VisionServiceImpl implements VisionService {
     @Override
     public String identificarProducto(byte[] imagenBytes, String mimeType) {
         String base64 = Base64.getEncoder().encodeToString(imagenBytes);
-        String mime = mimeNormalizado(mimeType);
+        String mime = ImagenEntrante.normalizarMime(mimeType);
 
         String textoBruto = geminiClient.generar(
                 SYSTEM_PROMPT,
@@ -73,24 +74,6 @@ public class VisionServiceImpl implements VisionService {
                 OPCIONES);
 
         return normalizar(textoBruto);
-    }
-
-    /**
-     * Gemini solo acepta un conjunto cerrado de MIME types de imagen. Si el
-     * cliente (Postman, o la ESP32-CAM) no etiqueta bien la parte
-     * multipart, se fuerza a image/jpeg en vez de reenviar un tipo
-     * inválido que Gemini rechazaría con un 400 confuso.
-     */
-    private String mimeNormalizado(String mimeType) {
-        String normalizado = mimeType == null ? "" : mimeType.toLowerCase();
-        return switch (normalizado) {
-            case "image/jpeg", "image/png", "image/webp", "image/heic", "image/heif" -> normalizado;
-            default -> {
-                log.warn("Content-Type de imagen no soportado ('{}'); se fuerza a image/jpeg. "
-                        + "Revisa que el cliente envíe el Content-Type correcto en la parte multipart.", mimeType);
-                yield "image/jpeg";
-            }
-        };
     }
 
     private String normalizar(String texto) {

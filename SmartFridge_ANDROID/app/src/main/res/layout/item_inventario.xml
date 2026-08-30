@@ -16,11 +16,20 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginTop="@dimen/space_s"
-    android:layout_marginBottom="@dimen/space_xs">
+    android:layout_marginBottom="@dimen/space_xs"
+    android:focusable="true">
 
+    <!--
+        noHideDescendants convierte la tarjeta entera en UN solo punto de
+        parada para el lector de pantalla. Sin esto, TalkBack se detiene
+        tres veces en cada producto (letra, nombre, caducidad) y leerlas
+        sueltas no significa nada: "B" no dice nada sin su producto. El
+        adaptador compone la frase completa en contentDescription.
+    -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:importantForAccessibility="noHideDescendants"
         android:padding="@dimen/space_m">
 
         <TextView

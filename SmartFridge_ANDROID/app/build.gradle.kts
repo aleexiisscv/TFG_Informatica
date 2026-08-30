@@ -86,6 +86,13 @@ dependencies {
     // tipografia y el color del tema (y por tanto el color dinamico).
     implementation(libs.markwon.core)
 
+    // --- Fase 12: accesibilidad y chat multimodal ---
+    // Orientacion EXIF de las fotos adjuntadas al chat. Casi todos los
+    // moviles guardan la foto en horizontal y anotan la rotacion en los
+    // metadatos; sin aplicarla, el modelo de vision recibe el producto
+    // tumbado.
+    implementation(libs.exifinterface)
+
     // Dependencias para MQTT — SIN USO ACTUAL desde la app. Ver nota en
     // gradle/libs.versions.toml antes de decidir si se retiran.
     implementation(libs.org.eclipse.paho.client.mqttv3)

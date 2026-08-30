@@ -73,7 +73,9 @@
                     android:orientation="horizontal">
 
                     <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/tempCard"
                         style="@style/Widget.SmartFridge.Card.Sensor"
+                        android:focusable="true"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginEnd="@dimen/space_s"
@@ -82,6 +84,7 @@
                         <androidx.constraintlayout.widget.ConstraintLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
+                            android:importantForAccessibility="noHideDescendants"
                             android:padding="@dimen/space_m">
 
                             <ImageView
@@ -130,7 +133,9 @@
                     </com.google.android.material.card.MaterialCardView>
 
                     <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/humCard"
                         style="@style/Widget.SmartFridge.Card.Sensor"
+                        android:focusable="true"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="@dimen/space_s"
@@ -139,6 +144,7 @@
                         <androidx.constraintlayout.widget.ConstraintLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
+                            android:importantForAccessibility="noHideDescendants"
                             android:padding="@dimen/space_m">
 
                             <ImageView
@@ -195,7 +201,9 @@
                     android:orientation="horizontal">
 
                     <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/waterCard"
                         style="@style/Widget.SmartFridge.Card.Sensor"
+                        android:focusable="true"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginEnd="@dimen/space_s"
@@ -204,6 +212,7 @@
                         <androidx.constraintlayout.widget.ConstraintLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
+                            android:importantForAccessibility="noHideDescendants"
                             android:padding="@dimen/space_m">
 
                             <ImageView
@@ -251,7 +260,9 @@
                     </com.google.android.material.card.MaterialCardView>
 
                     <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/doorCard"
                         style="@style/Widget.SmartFridge.Card.Sensor"
+                        android:focusable="true"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="@dimen/space_s"
@@ -260,6 +271,7 @@
                         <androidx.constraintlayout.widget.ConstraintLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
+                            android:importantForAccessibility="noHideDescendants"
                             android:padding="@dimen/space_m">
 
                             <ImageView

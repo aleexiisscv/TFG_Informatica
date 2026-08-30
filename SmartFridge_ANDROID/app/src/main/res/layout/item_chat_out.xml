@@ -15,6 +15,7 @@
         android:layout_gravity="end"
         android:layout_marginStart="56dp"
         android:background="@drawable/bg_bubble_out"
+        android:drawablePadding="@dimen/space_s"
         android:backgroundTint="?attr/colorPrimaryContainer"
         android:paddingStart="@dimen/space_m"
         android:paddingTop="12dp"

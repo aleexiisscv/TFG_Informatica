@@ -41,18 +41,35 @@ public final class ChatMessage {
     public final String texto;
     public final Tipo tipo;
 
-    private ChatMessage(long id, String texto, Tipo tipo) {
+    /**
+     * Fase 12: el turno del usuario llevaba una fotografía adjunta.
+     *
+     * <p>No se guarda el bitmap: la miniatura ya se descartó tras
+     * enviarla y retenerla por cada mensaje haría crecer la memoria de la
+     * conversación sin límite. Basta con saber que la hubo, para poder
+     * indicarlo en la burbuja y —sobre todo— para que el lector de
+     * pantalla lo mencione: sin esa marca, quien no ve la pantalla no
+     * tendría forma de saber que envió una foto.</p>
+     */
+    public final boolean llevaImagen;
+
+    private ChatMessage(long id, String texto, Tipo tipo, boolean llevaImagen) {
         this.id = id;
         this.texto = texto;
         this.tipo = tipo;
+        this.llevaImagen = llevaImagen;
     }
 
     public static ChatMessage delUsuario(String texto) {
-        return new ChatMessage(SECUENCIA.incrementAndGet(), texto, Tipo.USUARIO);
+        return delUsuario(texto, false);
+    }
+
+    public static ChatMessage delUsuario(String texto, boolean llevaImagen) {
+        return new ChatMessage(SECUENCIA.incrementAndGet(), texto, Tipo.USUARIO, llevaImagen);
     }
 
     public static ChatMessage delAsistente(String texto) {
-        return new ChatMessage(SECUENCIA.incrementAndGet(), texto, Tipo.ASISTENTE);
+        return new ChatMessage(SECUENCIA.incrementAndGet(), texto, Tipo.ASISTENTE, false);
     }
 
     /**
@@ -62,11 +79,11 @@ public final class ChatMessage {
      * la lista insertaría y borraría filas distintas y parpadearía.
      */
     public static ChatMessage escribiendo() {
-        return new ChatMessage(ID_ESCRIBIENDO, "", Tipo.ESCRIBIENDO);
+        return new ChatMessage(ID_ESCRIBIENDO, "", Tipo.ESCRIBIENDO, false);
     }
 
     public static ChatMessage error(String texto) {
-        return new ChatMessage(SECUENCIA.incrementAndGet(), texto, Tipo.ERROR);
+        return new ChatMessage(SECUENCIA.incrementAndGet(), texto, Tipo.ERROR, false);
     }
 
     /**
@@ -88,11 +105,12 @@ public final class ChatMessage {
             return false;
         }
         ChatMessage otro = (ChatMessage) o;
-        return id == otro.id && tipo == otro.tipo && Objects.equals(texto, otro.texto);
+        return id == otro.id && tipo == otro.tipo && llevaImagen == otro.llevaImagen
+                && Objects.equals(texto, otro.texto);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, texto, tipo);
+        return Objects.hash(id, texto, tipo, llevaImagen);
     }
 }

@@ -34,6 +34,11 @@ lifecycle = "2.8.7"
 # responde en Markdown porque su contenido tipico son recetas (pasos
 # numerados, listas de ingredientes, negritas).
 markwon = "4.6.2"
+# --- Nuevo en la Fase 12 ---
+# exifinterface: lee la orientacion que el movil anota en los metadatos
+# de la foto. Sin aplicarla, el modelo de vision recibe el producto
+# tumbado, que es justo lo que peor reconoce.
+exifinterface = "1.3.7"
 orgEclipsePahoAndroidService = "1.1.1"
 orgEclipsePahoClientMqttv3 = "1.2.5"
 # Bumped de 4.9.0 a 4.12.0: es la version minima que trae Retrofit 3.0.0
@@ -70,6 +75,8 @@ lottie = { group = "com.airbnb.android", name = "lottie", version.ref = "lottie"
 lifecycle-viewmodel = { group = "androidx.lifecycle", name = "lifecycle-viewmodel", version.ref = "lifecycle" }
 lifecycle-livedata = { group = "androidx.lifecycle", name = "lifecycle-livedata", version.ref = "lifecycle" }
 markwon-core = { group = "io.noties.markwon", name = "core", version.ref = "markwon" }
+# --- Fase 12: accesibilidad y chat multimodal ---
+exifinterface = { group = "androidx.exifinterface", name = "exifinterface", version.ref = "exifinterface" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

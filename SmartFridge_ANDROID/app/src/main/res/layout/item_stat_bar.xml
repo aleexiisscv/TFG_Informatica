@@ -8,11 +8,14 @@
     android:layout_height="wrap_content"
     android:gravity="center_vertical"
     android:orientation="horizontal"
+    android:focusable="true"
+    android:importantForAccessibility="yes"
     android:paddingTop="@dimen/space_xs"
     android:paddingBottom="@dimen/space_xs">
 
     <TextView
         android:id="@+id/barLabel"
+        android:importantForAccessibility="no"
         android:layout_width="32dp"
         android:layout_height="32dp"
         android:background="@drawable/bg_score_badge"
@@ -25,6 +28,7 @@
 
     <View
         android:id="@+id/barFill"
+        android:importantForAccessibility="no"
         android:layout_width="0dp"
         android:layout_height="12dp"
         android:layout_marginStart="@dimen/space_m"
@@ -34,12 +38,14 @@
 
     <View
         android:id="@+id/barRest"
+        android:importantForAccessibility="no"
         android:layout_width="0dp"
         android:layout_height="12dp"
         android:layout_weight="1" />
 
     <TextView
         android:id="@+id/barValue"
+        android:importantForAccessibility="no"
         android:layout_width="56dp"
         android:layout_height="wrap_content"
         android:gravity="end"

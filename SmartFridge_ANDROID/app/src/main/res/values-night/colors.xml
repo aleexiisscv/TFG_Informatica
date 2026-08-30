@@ -10,8 +10,6 @@
     contraste WCAG AA (>= 4.5:1) contra el texto claro del tema oscuro.
 -->
 <resources>
-    <color name="state_ok">#81C784</color>
-    <color name="state_ok_container">#1B3A1D</color>
     <color name="state_warn">#FFB74D</color>
     <color name="state_warn_container">#3D2B00</color>
     <color name="state_alert">#EF9A9A</color>

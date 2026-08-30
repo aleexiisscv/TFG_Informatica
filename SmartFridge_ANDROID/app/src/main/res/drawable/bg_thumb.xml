@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Recorte redondeado de la miniatura adjunta; se usa junto con
+     android:clipToOutline para que la imagen respete la esquina. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="#33808080" />
+    <corners android:radius="12dp" />
+</shape>

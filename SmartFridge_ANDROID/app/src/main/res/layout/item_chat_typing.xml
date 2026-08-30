@@ -18,10 +18,15 @@
     android:paddingTop="@dimen/space_xs"
     android:paddingBottom="@dimen/space_xs">
 
+    <!-- Un solo foco que anuncia "El asistente esta pensando": sin esto
+         TalkBack leeria "barra de progreso" y luego "Pensando". -->
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="start"
+        android:contentDescription="@string/a11y_pensando"
+        android:focusable="true"
+        android:importantForAccessibility="yes"
         android:background="@drawable/bg_bubble_in"
         android:backgroundTint="?attr/colorSurfaceContainerHigh"
         android:gravity="center_vertical"
@@ -33,6 +38,7 @@
 
         <com.google.android.material.progressindicator.CircularProgressIndicator
             android:id="@+id/typingIndicator"
+            android:importantForAccessibility="no"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:indeterminate="true"
@@ -42,6 +48,7 @@
 
         <TextView
             android:id="@+id/typingText"
+            android:importantForAccessibility="no"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/space_s"

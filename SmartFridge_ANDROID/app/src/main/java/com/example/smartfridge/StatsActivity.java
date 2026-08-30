@@ -289,6 +289,12 @@ public class StatsActivity extends AppCompatActivity {
             TextView barValue = fila.findViewById(R.id.barValue);
             barValue.setText(getString(R.string.sensor_value_percent, String.valueOf(porcentaje)));
 
+            // Accesibilidad: una barra es informacion puramente visual.
+            // La fila se lee como una frase unica ("Nutri-Score A: 42 por
+            // ciento") en vez de dejar que el lector recorra la letra, la
+            // barra vacia y el numero por separado.
+            fila.setContentDescription(getString(R.string.a11y_barra_nutriscore, letra, porcentaje));
+
             nutriScoreContainer.addView(fila);
         }
     }
