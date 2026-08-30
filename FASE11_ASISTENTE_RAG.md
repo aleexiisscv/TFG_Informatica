@@ -201,14 +201,55 @@ pagan **en cada turno**, porque el contexto se reinyecta entero cada vez.
 primer `getProducto().getNombre()` sobre una entidad ya desligada
 lanzaría `LazyInitializationException`.
 
-> **Observación sobre código existente.** `InventarioController.listar()`
-> y `RegistroController.listar()` recorren esas mismas relaciones `LAZY`
-> **sin** transacción. Con `open-in-view: false` eso debería fallar al
-> acceder a `getNombre()` / `getTipo()` (el `getRfidTag()` sobrevive por
-> ser la clave del proxy). No se ha tocado nada porque no formaba parte
-> del encargo, pero conviene comprobarlo: si `/api/inventario` responde
-> 500, la corrección es añadir `@Transactional(readOnly = true)` al
-> método del controlador, o mejor, mover el mapeo a un servicio.
+### 3.6 Corrección: `LazyInitializationException` en dos endpoints
+
+El riesgo anotado durante esta fase **se confirmó en ejecución**. Nada
+más iniciar sesión, el backend registraba:
+
+```
+LazyInitializationException: Could not initialize proxy
+  [com.smartfridge.model.Producto#brick_leche_entera] - no session
+LazyInitializationException: Could not initialize proxy
+  [com.smartfridge.model.Sensor#3] - no session
+```
+
+**Diagnóstico.** No es un fallo del login: `/api/auth/login` devuelve un
+`Usuario`, que no tiene relaciones. Los errores los disparaban los dos
+endpoints que la app llama **inmediatamente después** de autenticarse:
+`GET /api/inventario` (lo carga el Dashboard) y
+`GET /api/registros?tipo=ALERTA` (lo sondea `MainShellActivity` para el
+badge de alertas).
+
+`Inventario.producto`, `Registro.producto` y `Registro.sensor` son
+`FetchType.LAZY`, y el proyecto tiene `open-in-view: false` —lo
+correcto en una API REST—. Los métodos de `SimpleJpaRepository` abren su
+propia transacción y la **cierran al devolver**, así que las entidades
+llegaban al controlador ya desligadas, con la asociación como un proxy
+sin sesión. Detalle revelador: `getRfidTag()` funcionaba (el proxy
+conoce su propia clave) y `getNombre()` explotaba.
+
+**Corrección aplicada:** `@EntityGraph` en las consultas de
+`InventarioRepository` y `RegistroRepository`, no `@Transactional` en
+los controladores. Dos razones:
+
+1. **Capas.** Abrir una transacción desde la capa web metería una
+   preocupación de persistencia en el transporte, justo lo contrario del
+   criterio que sigue el resto del proyecto.
+2. **Rendimiento.** `@Transactional` habría hecho que funcionase, pero
+   cada fila seguiría disparando un SELECT extra al tocar su asociación
+   — el problema **N+1**. El grafo lo trae todo en una sola consulta con
+   JOIN.
+
+En `RegistroRepository` el grafo carga **ambas** asociaciones. Como son
+opcionales por diseño (exactamente una está rellena según el tipo de
+evento), Hibernate genera `LEFT JOIN` y las alertas siguen apareciendo;
+un `join fetch` escrito a mano habría producido un `INNER JOIN`
+silencioso que las haría desaparecer del listado.
+
+**Efecto colateral positivo:** `GET /api/registros` sin filtro —el que
+consume `StatsActivity`— tenía exactamente el mismo fallo latente al
+leer `registro.getProducto().getNombre()` de las filas de ENTRADA.
+Queda corregido por el mismo cambio.
 
 ---
 
