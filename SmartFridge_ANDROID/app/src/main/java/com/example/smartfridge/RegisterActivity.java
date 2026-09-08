@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.smartfridge.api.RetrofitClient;
+import com.example.smartfridge.api.SesionUsuario;
 import com.example.smartfridge.api.dto.AuthResponse;
 import com.example.smartfridge.api.dto.RegisterRequest;
 import com.google.android.material.button.MaterialButton;
@@ -105,6 +106,15 @@ public class RegisterActivity extends AppCompatActivity {
                                            @NonNull Response<AuthResponse> response) {
                         registerButton.setEnabled(true);
                         if (response.isSuccessful()) {
+                            // El backend devuelve token también al
+                            // registrarse: obligar a iniciar sesión justo
+                            // después sería pedir que se demuestre algo
+                            // que se acaba de demostrar. Se guarda por si
+                            // en el futuro se entra directo al shell.
+                            SesionUsuario sesion = SesionUsuario.get();
+                            if (sesion != null && response.body() != null) {
+                                sesion.guardar(response.body());
+                            }
                             Snackbar.make(registerButton, R.string.auth_ok_registered,
                                     Snackbar.LENGTH_SHORT).show();
                             // Se vuelve al login en lugar de apilar otra

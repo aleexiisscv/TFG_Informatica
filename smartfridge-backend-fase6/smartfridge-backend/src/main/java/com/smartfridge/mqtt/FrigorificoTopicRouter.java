@@ -1,10 +1,14 @@
 package com.smartfridge.mqtt;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
+import com.smartfridge.config.CamaraProperties;
+import com.smartfridge.evento.PuertaCerradaEvent;
 import com.smartfridge.exception.InventarioVacioException;
 import com.smartfridge.exception.ProductoNoEncontradoException;
 import com.smartfridge.model.TipoSensor;
@@ -40,6 +44,24 @@ public class FrigorificoTopicRouter {
     private final InventarioService inventarioService;
     private final RegistroService registroService;
     private final EstadoModoFrigorifico estadoModo;
+    private final ApplicationEventPublisher publicadorDeEventos;
+    private final CamaraProperties camaraProperties;
+
+    /**
+     * Último estado conocido de la puerta.
+     *
+     * <p>El ESP32 republica el estado en cada vuelta de su bucle, no solo
+     * cuando cambia: sin esta memoria, "puerta cerrada" se emitiría
+     * varias veces por segundo mientras la puerta simplemente sigue
+     * cerrada. Saber que el firmware se comporta así es precisamente el
+     * tipo de conocimiento que debe vivir en la capa anticorrupción y no
+     * filtrarse al dominio.</p>
+     *
+     * <p>Se arranca en {@code false} (cerrada): si el backend se reinicia
+     * con la puerta ya cerrada, no se inventa un cierre que no ha
+     * ocurrido.</p>
+     */
+    private final AtomicBoolean puertaAbierta = new AtomicBoolean(false);
 
     public void enrutar(String topicCompleto, String payload) {
         String subTopic = topicCompleto.startsWith(PREFIJO_TOPIC)
@@ -56,8 +78,7 @@ public class FrigorificoTopicRouter {
             case "water" ->
                     sensorService.registrarLectura(TipoSensor.AGUA, parseEstadoBinario(payload, "Agua detectada"));
 
-            case "door" ->
-                    sensorService.registrarLectura(TipoSensor.PUERTA, parseEstadoBinario(payload, "Puerta abierta"));
+            case "door" -> procesarEstadoPuerta(payload);
 
             case "modo" -> actualizarModo(payload);
 
@@ -67,6 +88,32 @@ public class FrigorificoTopicRouter {
 
             default ->
                     log.warn("Topic MQTT no reconocido: '{}' (payload='{}')", topicCompleto, payload);
+        }
+    }
+
+    // ------------------------------------------------------------------
+    // frigorifico/door
+    // ------------------------------------------------------------------
+
+    /**
+     * Registra la lectura y, si procede, anuncia el CIERRE de la puerta.
+     *
+     * <p>Se publica solo en la transición abierta → cerrada, no en cada
+     * mensaje: el firmware repite el estado constantemente. Y solo si el
+     * disparo automático está activado, de modo que con la configuración
+     * por defecto este método se comporta exactamente igual que antes de
+     * la Fase 13 — una sola llamada a {@code registrarLectura}.</p>
+     */
+    private void procesarEstadoPuerta(String payload) {
+        boolean abierta = parseEstadoBinario(payload, "Puerta abierta") == 1f;
+        sensorService.registrarLectura(TipoSensor.PUERTA, abierta ? 1f : 0f);
+
+        boolean estabaAbierta = puertaAbierta.getAndSet(abierta);
+        boolean acabaDeCerrarse = estabaAbierta && !abierta;
+
+        if (acabaDeCerrarse && camaraProperties.activo()) {
+            log.debug("Transición de puerta abierta a cerrada: se publica PuertaCerradaEvent");
+            publicadorDeEventos.publishEvent(PuertaCerradaEvent.ahora());
         }
     }
 

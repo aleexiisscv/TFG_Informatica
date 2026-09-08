@@ -71,6 +71,23 @@
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
 
+        <!-- ===================== JWT (Fase 13) =====================
+             Resource Server de Spring Security: aporta el filtro que valida
+             el "Authorization: Bearer ..." y, vía spring-security-oauth2-jose
+             (Nimbus), tanto el JwtDecoder como el JwtEncoder.
+
+             Se elige esto en lugar de una librería suelta como jjwt porque
+             la validación (firma, expiración, emisor) la hace un componente
+             mantenido por el equipo de Spring e integrado en la cadena de
+             filtros, en vez de un @ControllerAdvice o un filtro propio
+             escrito a mano. Menos código nuestro en la ruta crítica de
+             seguridad es exactamente lo que se quiere en la ruta crítica de
+             seguridad. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+        </dependency>
+
         <!-- ===================== MQTT =====================
              Cliente Paho: la misma librería que ya usaba el backend legacy
              (mqtt.MQTTBroker / MQTTSuscriber), envuelta ahora en un

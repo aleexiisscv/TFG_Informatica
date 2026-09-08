@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.smartfridge.api.RetrofitClient;
+import com.example.smartfridge.api.SesionUsuario;
 import com.example.smartfridge.api.dto.AuthResponse;
 import com.example.smartfridge.api.dto.LoginRequest;
 import com.google.android.material.button.MaterialButton;
@@ -98,6 +99,14 @@ public class LoginActivity extends AppCompatActivity {
                                            @NonNull Response<AuthResponse> response) {
                         loginButton.setEnabled(true);
                         if (response.isSuccessful() && response.body() != null) {
+                            // Fase 13: se guarda el JWT ANTES de navegar.
+                            // El shell arranca pidiendo alertas nada más
+                            // aparecer; sin token, esa primera petición
+                            // saldría sin autorizar.
+                            SesionUsuario sesion = SesionUsuario.get();
+                            if (sesion != null) {
+                                sesion.guardar(response.body());
+                            }
                             irAlShell();
                         } else {
                             // 401/404 del servidor: credenciales incorrectas.

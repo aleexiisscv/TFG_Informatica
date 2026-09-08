@@ -28,6 +28,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.airbnb.lottie.LottieAnimationView;
+import com.example.smartfridge.LoginActivity;
 import com.example.smartfridge.R;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -256,6 +257,21 @@ public class AsistenteFragment extends Fragment {
                 viewModel.avisoMostrado();
             }
         });
+
+        viewModel.sesionCaducada().observe(getViewLifecycleOwner(), caducada -> {
+            if (!Boolean.TRUE.equals(caducada) || getView() == null) {
+                return;
+            }
+            viewModel.sesionCaducadaAtendida();
+            // Snackbar con acción en vez de navegar solos: sacar al
+            // usuario de la conversación sin avisar sería desconcertante,
+            // y más aún para quien la está siguiendo por voz.
+            Snackbar barra = Snackbar.make(getView(), R.string.assistant_error_session,
+                    Snackbar.LENGTH_INDEFINITE);
+            barra.setAnchorView(micButton);
+            barra.setAction(R.string.auth_session_expired_action, v -> volverAlLogin());
+            barra.show();
+        });
     }
 
     private void alActualizarConversacion(List<ChatMessage> mensajes) {
@@ -440,6 +456,13 @@ public class AsistenteFragment extends Fragment {
         // INVISIBLE y no GONE: mantener el hueco evita que la lista de
         // chat dé un salto vertical cada vez que aparece el estado.
         assistantStatus.setVisibility(View.INVISIBLE);
+    }
+
+    private void volverAlLogin() {
+        Intent intent = new Intent(requireContext(), LoginActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        requireActivity().finish();
     }
 
     private void avisar(@StringRes int mensaje) {

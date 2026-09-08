@@ -90,6 +90,15 @@ public class AsistenteViewModel extends AndroidViewModel {
     private final MutableLiveData<Boolean> vozActiva = new MutableLiveData<>(false);
     private final MutableLiveData<Integer> aviso = new MutableLiveData<>(null);
 
+    /**
+     * Fase 13: el asistente pasa a exigir un JWT válido. Si el servidor
+     * responde 401, el problema no es del asistente ni de la red: es que
+     * la sesión ha caducado, y la única salida es volver a entrar. Se
+     * expone aparte de los avisos normales porque requiere una acción
+     * distinta —navegar al login— y no solo un mensaje.
+     */
+    private final MutableLiveData<Boolean> sesionCaducada = new MutableLiveData<>(false);
+
     private final ExecutorService trabajos = Executors.newSingleThreadExecutor();
     private final SharedPreferences preferencias;
 
@@ -141,6 +150,14 @@ public class AsistenteViewModel extends AndroidViewModel {
     /** Avisos puntuales para la vista (id de cadena), consumidos una sola vez. */
     public LiveData<Integer> aviso() {
         return aviso;
+    }
+
+    public LiveData<Boolean> sesionCaducada() {
+        return sesionCaducada;
+    }
+
+    public void sesionCaducadaAtendida() {
+        sesionCaducada.setValue(false);
     }
 
     public void avisoMostrado() {
@@ -217,6 +234,17 @@ public class AsistenteViewModel extends AndroidViewModel {
                     conversacion.add(ChatMessage.delAsistente(cuerpo.respuesta));
                     mensajePendienteDeReintento = null;
                     imagenPendienteDeReintento = null;
+                } else if (response.code() == 401) {
+                    // El interceptor de RetrofitClient ya ha borrado la
+                    // sesión local. Reintentar no serviría de nada: se
+                    // ofrece volver a entrar en lugar de un botón de
+                    // reintento que fallaría igual.
+                    Log.w(TAG, "El asistente respondió 401: sesión caducada");
+                    mensajePendienteDeReintento = null;
+                    imagenPendienteDeReintento = null;
+                    conversacion.add(ChatMessage.error(
+                            getApplication().getString(R.string.assistant_error_session)));
+                    sesionCaducada.setValue(true);
                 } else {
                     Log.w(TAG, "Respuesta no útil del asistente: HTTP " + response.code());
                     mensajePendienteDeReintento = mensaje;

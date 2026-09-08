@@ -203,10 +203,16 @@ public class GeminiClient {
                 .map(GeminiClient::aContent)
                 .toList();
 
+        GeminiOpciones.Esquema esquema = opciones.esquema();
         return new GeminiRequest(
                 new SystemInstruction(List.of(Part.deTexto(systemPrompt))),
                 contents,
-                new GenerationConfig(opciones.temperature(), opciones.maxOutputTokens(), thinkingConfigPara(modelo))
+                new GenerationConfig(
+                        opciones.temperature(),
+                        opciones.maxOutputTokens(),
+                        thinkingConfigPara(modelo),
+                        esquema == null ? null : esquema.mimeType(),
+                        esquema == null ? null : new ResponseSchema(esquema.tipo(), esquema.valores()))
         );
     }
 
@@ -294,8 +300,20 @@ public class GeminiClient {
     private record InlineData(String mimeType, String data) {
     }
 
+    /**
+     * {@code responseMimeType} y {@code responseSchema} solo se serializan
+     * cuando hay esquema, gracias a {@code @JsonInclude(NON_NULL)}: una
+     * petición de texto libre sale exactamente igual que antes de la
+     * Fase 13.
+     */
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private record GenerationConfig(double temperature, int maxOutputTokens, ThinkingConfig thinkingConfig) {
+    private record GenerationConfig(double temperature, int maxOutputTokens, ThinkingConfig thinkingConfig,
+                                    String responseMimeType, ResponseSchema responseSchema) {
+    }
+
+    /** Esquema de salida en la nomenclatura de la API de Gemini. */
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private record ResponseSchema(String type, @com.fasterxml.jackson.annotation.JsonProperty("enum") List<String> valores) {
     }
 
     @JsonInclude(JsonInclude.Include.NON_NULL)

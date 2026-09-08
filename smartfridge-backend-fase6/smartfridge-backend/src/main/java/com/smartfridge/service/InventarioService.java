@@ -28,4 +28,17 @@ public interface InventarioService {
      *         si no queda ninguna unidad de ese producto en el inventario
      */
     Inventario retirarProducto(String rfidTag);
+
+    /**
+     * Revisa el inventario y genera alertas para los productos que están
+     * a punto de caducar o ya han caducado (Fase 13).
+     *
+     * <p>Se ejecuta sola una vez al día, pero se expone en la interfaz
+     * para poder invocarla desde un test —o desde un endpoint de
+     * administración— sin esperar al cron. Una tarea programada que solo
+     * se puede probar esperando 24 horas es una tarea que nadie prueba.</p>
+     *
+     * @return número de alertas creadas en esta pasada
+     */
+    int revisarCaducidades();
 }

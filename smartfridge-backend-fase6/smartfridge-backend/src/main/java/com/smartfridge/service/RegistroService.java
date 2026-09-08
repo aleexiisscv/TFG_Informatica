@@ -24,4 +24,27 @@ public interface RegistroService {
      *                   en {@code SensorService})
      */
     Registro registrarAlerta(TipoSensor tipoSensor, Float medicion);
+
+    /**
+     * Alerta de caducidad próxima (Fase 13).
+     *
+     * <p>Se guarda como {@code TipoRegistro.ALERTA} —igual que las
+     * alertas de sensor— pero con {@code producto} relleno y
+     * {@code sensor} nulo. Rompe deliberadamente la exclusión mutua que
+     * documenta la entidad {@code Registro}, y conviene ser explícito
+     * sobre por qué: la alternativa era crear un
+     * {@code TipoRegistro.CADUCIDAD}, que habría dejado estas alertas
+     * FUERA del panel de notificaciones de la app —que consulta
+     * {@code /api/registros?tipo=ALERTA}— hasta actualizar también el
+     * cliente. Reutilizar ALERTA hace que aparezcan desde el primer día
+     * en el sitio donde el usuario ya mira. {@code RegistroResponse} ya
+     * expone ambos campos como opcionales, así que la API lo soporta sin
+     * cambios.</p>
+     *
+     * @param producto        producto que va a caducar
+     * @param diasRestantes   días que faltan; negativo si ya caducó. Viaja
+     *                        en el campo {@code medicion}, que es el que
+     *                        la app ya sabe leer de una alerta
+     */
+    Registro registrarAlertaCaducidad(Producto producto, long diasRestantes);
 }

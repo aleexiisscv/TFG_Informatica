@@ -111,6 +111,67 @@ smartfridge:
     # presupuesto de los siguientes.
     max-caracteres-turno: ${ASISTENTE_MAX_CARACTERES_TURNO:1500}
 
+  # ------------------------------------------------------------------
+  # SEGURIDAD (Fase 13)
+  # ------------------------------------------------------------------
+  seguridad:
+    # Clave HMAC de firma de los JWT. NO tiene valor por defecto a
+    # propósito: una clave de firma versionada en Git es una clave
+    # pública, y cualquiera que lea el repositorio podría emitir tokens
+    # válidos. Si falta, JwtConfig genera una aleatoria para esa
+    # ejecución y avisa por log (los tokens no sobreviven a un
+    # reinicio). Genera una así:  openssl rand -base64 48
+    jwt-secret: ${JWT_SECRET:}
+
+    # 12 horas. Suficiente para una jornada de uso sin volver a entrar,
+    # y corto como para que un token robado no sirva indefinidamente.
+    jwt-expiracion-minutos: ${JWT_EXPIRACION_MINUTOS:720}
+    emisor: smartfridge-backend
+
+    # Secreto compartido con la ESP32-CAM. Sin valor por defecto por el
+    # mismo motivo que el anterior; vacío = ningun dispositivo puede
+    # subir fotos y /api/vision solo acepta JWT de usuario.
+    # La placa debe enviarlo en la cabecera: X-Device-Key: <valor>
+    clave-dispositivo: ${DEVICE_KEY:}
+
+  # ------------------------------------------------------------------
+  # MOTOR DE CADUCIDADES (Fase 13)
+  # ------------------------------------------------------------------
+  caducidades:
+    # 08:00 cada día. La caducidad se mide en días: comprobarla más a
+    # menudo no adelanta información, solo multiplica escrituras. Y a
+    # primera hora porque es cuando el aviso todavía sirve para decidir
+    # el desayuno o la compra.
+    # Para probarlo sin esperar: "0 */2 * * * *" (cada 2 minutos).
+    cron: ${CADUCIDADES_CRON:0 0 8 * * *}
+    dias-margen: ${CADUCIDADES_DIAS_MARGEN:2}
+
+  # ------------------------------------------------------------------
+  # ORQUESTACIÓN CÁMARA-PUERTA (Fase 13) — DESACTIVADA
+  #
+  # Al cerrarse la puerta, el backend descarga un JPEG de la ESP32-CAM y
+  # lo pasa por el flujo de visión.
+  #
+  # Se entrega APAGADA por decisión de proyecto: el sensor magnético de
+  # puerta produce falsos contactos, y un disparador conectado a un
+  # sensor que rebota dispararía capturas en ráfaga (cada una, cuota de
+  # pago). Con disparo-automatico=false, CamaraConfig y
+  # CapturaAutomaticaService ni siquiera se instancian: el sistema se
+  # comporta exactamente igual que antes de esta fase, con la ESP32-CAM
+  # tomando su foto al arrancar y subiéndola ella misma.
+  #
+  # Para activarla: poner true, ajustar base-url a la IP de la placa, y
+  # que el firmware exponga GET /capture devolviendo image/jpeg.
+  # ------------------------------------------------------------------
+  camara:
+    disparo-automatico: ${CAMARA_DISPARO_AUTOMATICO:false}
+    base-url: ${CAMARA_BASE_URL:}
+    ruta-captura: /capture
+    # Antirrebote: una ráfaga de "puerta cerrada" produce UNA captura.
+    intervalo-minimo-ms: 15000
+    timeout-conexion-ms: 3000
+    timeout-lectura-ms: 10000
+
 logging:
   level:
     # El cliente HTTP de Gemini se extrajo de VisionServiceImpl a
@@ -120,3 +181,6 @@ logging:
     com.smartfridge.gemini.GeminiClient: DEBUG
     # Muestra el resumen del contexto capturado en cada turno.
     com.smartfridge.service.ContextoFrigorificoServiceImpl: DEBUG
+    # Fase 13: traza del motor de caducidades y de la captura automática.
+    com.smartfridge.service.InventarioServiceImpl: INFO
+    com.smartfridge.service.CapturaAutomaticaService: INFO

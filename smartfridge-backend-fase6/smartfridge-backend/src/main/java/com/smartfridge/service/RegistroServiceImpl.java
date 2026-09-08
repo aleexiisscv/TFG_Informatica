@@ -51,6 +51,12 @@ public class RegistroServiceImpl implements RegistroService {
         return guardar(TipoRegistro.ALERTA, null, sensor, medicion);
     }
 
+    @Override
+    @Transactional
+    public Registro registrarAlertaCaducidad(Producto producto, long diasRestantes) {
+        return guardar(TipoRegistro.ALERTA, producto, null, (float) diasRestantes);
+    }
+
     private Registro guardar(TipoRegistro tipo, Producto producto, Sensor sensor, Float medicion) {
         Registro registro = Registro.builder()
                 .tipoRegistro(tipo)

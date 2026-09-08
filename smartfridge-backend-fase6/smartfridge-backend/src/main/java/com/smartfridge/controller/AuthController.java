@@ -11,6 +11,7 @@ import com.smartfridge.dto.AuthResponse;
 import com.smartfridge.dto.LoginRequest;
 import com.smartfridge.dto.RegisterRequest;
 import com.smartfridge.model.Usuario;
+import com.smartfridge.service.TokenService;
 import com.smartfridge.service.UsuarioService;
 
 import jakarta.validation.Valid;
@@ -29,6 +30,7 @@ import lombok.RequiredArgsConstructor;
 public class AuthController {
 
     private final UsuarioService usuarioService;
+    private final TokenService tokenService;
 
     @PostMapping("/registro")
     @ResponseStatus(HttpStatus.CREATED)
@@ -43,7 +45,19 @@ public class AuthController {
         return toResponse(usuario);
     }
 
-    private static AuthResponse toResponse(Usuario usuario) {
-        return new AuthResponse(usuario.getId(), usuario.getNombre(), usuario.getCorreo());
+    /**
+     * Fase 13: el registro también devuelve token. Obligar a iniciar
+     * sesión inmediatamente después de crear la cuenta sería pedirle al
+     * usuario que demuestre algo que acaba de demostrar.
+     */
+    private AuthResponse toResponse(Usuario usuario) {
+        TokenService.Token token = tokenService.generar(usuario);
+        return new AuthResponse(
+                usuario.getId(),
+                usuario.getNombre(),
+                usuario.getCorreo(),
+                token.valor(),
+                token.tipo(),
+                token.expiraEnSegundos());
     }
 }

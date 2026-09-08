@@ -6,6 +6,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import android.content.Context;
+
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -47,6 +49,8 @@ public class AlertaAdapter extends ListAdapter<RegistroDto, AlertaAdapter.Alerta
                 @Override
                 public boolean areContentsTheSame(@NonNull RegistroDto a, @NonNull RegistroDto b) {
                     return Objects.equals(a.sensorTipo, b.sensorTipo)
+                            && Objects.equals(a.nombreProducto, b.nombreProducto)
+                            && Objects.equals(a.medicion, b.medicion)
                             && Objects.equals(a.fecha, b.fecha);
                 }
             };
@@ -64,6 +68,33 @@ public class AlertaAdapter extends ListAdapter<RegistroDto, AlertaAdapter.Alerta
         holder.enlazar(getItem(position));
     }
 
+    /**
+     * Texto de la alerta.
+     *
+     * <p>Fase 13: hay dos clases de alerta y se distinguen por qué campo
+     * viene relleno. Las de <b>sensor</b> traen {@code sensorTipo}; las de
+     * <b>caducidad</b>, que genera la tarea diaria del backend, traen
+     * {@code nombreProducto} y los días restantes en {@code medicion}.</p>
+     *
+     * <p>Se reutiliza el tipo ALERTA para las dos —en lugar de crear un
+     * TipoRegistro nuevo— precisamente para que aparezcan juntas aquí:
+     * al usuario le da igual si el aviso viene de un sensor o de un
+     * calendario, lo que quiere es una sola lista de "cosas que mirar".</p>
+     */
+    static CharSequence textoDe(Context ctx, RegistroDto registro) {
+        if (registro.nombreProducto != null && !registro.nombreProducto.isBlank()) {
+            int dias = registro.medicion == null ? 0 : Math.round(registro.medicion);
+            if (dias < 0) {
+                return ctx.getString(R.string.alert_expired, registro.nombreProducto, -dias);
+            }
+            if (dias == 0) {
+                return ctx.getString(R.string.alert_expiry_today, registro.nombreProducto);
+            }
+            return ctx.getString(R.string.alert_expiry_soon, registro.nombreProducto, dias);
+        }
+        return ctx.getString(descripcionDe(registro.sensorTipo));
+    }
+
     @StringRes
     static int descripcionDe(@Nullable String sensorTipo) {
         if (sensorTipo == null) {
@@ -79,7 +110,17 @@ public class AlertaAdapter extends ListAdapter<RegistroDto, AlertaAdapter.Alerta
     }
 
     @DrawableRes
-    static int iconoDe(@Nullable String sensorTipo) {
+    static int iconoDe(RegistroDto registro) {
+        // Un reloj para las caducidades: distingue de un vistazo el aviso
+        // que depende del tiempo del que depende de una medida física.
+        if (registro.nombreProducto != null && !registro.nombreProducto.isBlank()) {
+            return R.drawable.ic_schedule_24;
+        }
+        return iconoDeSensor(registro.sensorTipo);
+    }
+
+    @DrawableRes
+    private static int iconoDeSensor(@Nullable String sensorTipo) {
         if (sensorTipo == null) {
             return R.drawable.ic_warning_24;
         }
@@ -106,9 +147,12 @@ public class AlertaAdapter extends ListAdapter<RegistroDto, AlertaAdapter.Alerta
         }
 
         void enlazar(RegistroDto registro) {
-            alertIcon.setImageResource(iconoDe(registro.sensorTipo));
-            alertText.setText(descripcionDe(registro.sensorTipo));
+            Context ctx = itemView.getContext();
+            CharSequence texto = textoDe(ctx, registro);
             String cuando = Fechas.fechaHora(registro.fecha);
+
+            alertIcon.setImageResource(iconoDe(registro));
+            alertText.setText(texto);
             alertTime.setText(cuando);
 
             // Accesibilidad: la fila es un unico punto de parada (ver
@@ -116,10 +160,7 @@ public class AlertaAdapter extends ListAdapter<RegistroDto, AlertaAdapter.Alerta
             // palabra "Alerta" porque el hecho de serlo lo transmite hoy
             // el color rojo de la tarjeta, y el color no llega a quien no
             // lo distingue o no ve la pantalla.
-            itemView.setContentDescription(itemView.getContext().getString(
-                    R.string.a11y_alerta,
-                    itemView.getContext().getString(descripcionDe(registro.sensorTipo)),
-                    cuando));
+            itemView.setContentDescription(ctx.getString(R.string.a11y_alerta, texto, cuando));
         }
     }
 }

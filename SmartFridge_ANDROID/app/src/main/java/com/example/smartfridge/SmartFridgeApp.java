@@ -2,6 +2,7 @@ package com.example.smartfridge;
 
 import android.app.Application;
 
+import com.example.smartfridge.api.SesionUsuario;
 import com.google.android.material.color.DynamicColors;
 
 /**
@@ -35,5 +36,11 @@ public class SmartFridgeApp extends Application {
     public void onCreate() {
         super.onCreate();
         DynamicColors.applyToActivitiesIfAvailable(this);
+
+        // Fase 13: la sesión se inicializa aquí porque RetrofitClient es
+        // estático y no tiene Context, pero su interceptor necesita el
+        // token en cada petición. Hacerlo en Application garantiza que
+        // está lista antes de que cualquier pantalla pueda pedir datos.
+        SesionUsuario.inicializar(this);
     }
 }

@@ -1,5 +1,6 @@
 package com.smartfridge.repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -59,4 +60,21 @@ public interface InventarioRepository extends JpaRepository<Inventario, Long> {
      */
     @EntityGraph(attributePaths = "producto")
     Optional<Inventario> findFirstByProducto_RfidTagOrderByFechaEntradaAsc(String rfidTag);
+
+    /**
+     * Unidades cuya caducidad ya ha pasado o está por llegar antes del
+     * límite indicado (Fase 13).
+     *
+     * <p>Sin cota inferior a propósito: un producto que caducó ayer y
+     * sigue dentro del frigorífico es MÁS urgente que uno que caduca
+     * pasado mañana, no menos. Excluirlo dejaría al usuario sin el aviso
+     * justo cuando más falta hace.</p>
+     *
+     * <p>El {@code @EntityGraph} es obligatorio aquí: el motor de
+     * caducidades lee {@code getProducto().getNombre()} de cada unidad, y
+     * sin él saltaría el mismo {@code LazyInitializationException} que se
+     * corrigió en los controladores.</p>
+     */
+    @EntityGraph(attributePaths = "producto")
+    List<Inventario> findByFechaCaducidadLessThanEqualOrderByFechaCaducidadAsc(LocalDateTime limite);
 }

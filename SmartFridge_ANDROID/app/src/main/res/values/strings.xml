@@ -27,6 +27,7 @@
     <string name="auth_password">Contrasena</string>
     <string name="auth_name">Nombre</string>
     <string name="auth_login">Iniciar sesion</string>
+    <string name="auth_session_expired_action">Iniciar sesion</string>
     <string name="auth_register">Crear cuenta</string>
     <string name="auth_no_account">No tienes cuenta? Registrate</string>
     <string name="auth_has_account">Ya tienes cuenta? Inicia sesion</string>
@@ -82,10 +83,13 @@
     <string name="alert_humidity">Humedad fuera de rango</string>
     <string name="alert_door">Puerta abierta demasiado tiempo</string>
     <string name="alert_generic">Alerta en el frigorifico</string>
+    <string name="alert_expiry_soon">%1$s caduca en %2$d dia(s)</string>
+    <string name="alert_expiry_today">%1$s caduca hoy</string>
+    <string name="alert_expired">%1$s ha caducado hace %2$d dia(s)</string>
 
     <!-- Bloque reservado a IA -->
-    <string name="ai_panel_title">Analisis predictivo</string>
-    <string name="ai_panel_placeholder">Cuando el modelo de analitica este entrenado, aqui apareceran las predicciones de consumo y las anomalias detectadas sobre la serie temporal de lecturas.</string>
+    <string name="ai_panel_title">Vigilancia automatica</string>
+    <string name="ai_panel_placeholder">El servidor revisa cada dia el inventario y avisa de lo que esta a punto de caducar. Los sensores marcan una anomalia en su tarjeta cuando el valor se sale de rango, y las incidencias quedan registradas abajo.</string>
 
     <!-- Asistente -->
     <string name="assistant_title">Asistente</string>
@@ -98,6 +102,7 @@
     <string name="assistant_thinking">Pensando…</string>
     <string name="assistant_error_network">No se pudo conectar con el asistente. Comprueba que el backend esta arrancado.</string>
     <string name="assistant_error_server">El asistente no esta disponible ahora mismo. Vuelve a intentarlo en unos segundos.</string>
+    <string name="assistant_error_session">Tu sesion ha caducado. Vuelve a iniciar sesion para seguir usando el asistente.</string>
 
     <!-- Fase 12: accesibilidad y chat multimodal -->
     <string name="assistant_attach">Adjuntar una foto</string>

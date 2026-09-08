@@ -35,4 +35,21 @@ public interface RegistroRepository extends JpaRepository<Registro, Long> {
     /** Útil para paneles de actividad reciente o estadísticas por tipo de evento. */
     @EntityGraph(attributePaths = {"producto", "sensor"})
     List<Registro> findByTipoRegistroOrderByFechaDesc(TipoRegistro tipoRegistro);
+
+    /**
+     * ¿Ya se avisó hoy de la caducidad de este producto? (Fase 13)
+     *
+     * <p>El motor de caducidades es idempotente por día gracias a esta
+     * consulta. Sin ella, un reinicio del backend a media mañana volvería
+     * a lanzar la tarea y duplicaría todas las alertas; y con un margen
+     * de dos días, cada producto generaría además un aviso el día 2 y
+     * otro el día 1. Repetir el recordatorio cada día es intencionado —
+     * la urgencia aumenta— pero repetirlo tres veces la misma mañana solo
+     * es ruido.</p>
+     *
+     * <p>No lleva {@code @EntityGraph}: devuelve un booleano, no
+     * entidades, así que no hay ninguna asociación que inicializar.</p>
+     */
+    boolean existsByTipoRegistroAndProducto_RfidTagAndFechaGreaterThanEqual(
+            TipoRegistro tipoRegistro, String rfidTag, java.time.LocalDateTime desde);
 }
