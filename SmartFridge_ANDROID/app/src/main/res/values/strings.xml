@@ -133,6 +133,9 @@
     <string name="scan_preview_desc">Vista previa de la captura</string>
     <string name="scan_no_camera">Este dispositivo no tiene camara disponible</string>
     <string name="scan_pending_model">Imagen capturada. La clasificacion automatica se activara cuando el modelo de vision este integrado.</string>
+    <string name="scan_analizando">Analizando imagen…</string>
+    <string name="scan_no_identificado">No se ha podido identificar el producto automaticamente. Pulsa \"Usar esta imagen\" para darlo de alta manualmente.</string>
+    <string name="scan_added">Producto identificado y anadido al inventario: %1$s</string>
 
     <!-- Alta manual de producto -->
     <string name="product_title">Nuevo producto</string>

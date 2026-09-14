@@ -98,6 +98,17 @@ public final class Imagenes {
     /** Variante para un bitmap ya en memoria (la vista previa de la cámara). */
     @Nullable
     public static String comprimirABase64(@Nullable Bitmap original) {
+        byte[] jpeg = comprimirAJpeg(original);
+        return jpeg == null ? null : Base64.encodeToString(jpeg, Base64.NO_WRAP);
+    }
+
+    /**
+     * Variante en bytes JPEG crudos (sin Base64), pensada para una subida
+     * multiparte — como la de {@code ScanProductActivity} contra
+     * {@code /api/vision/analizar} — en vez de un campo dentro de un JSON.
+     */
+    @Nullable
+    public static byte[] comprimirAJpeg(@Nullable Bitmap original) {
         if (original == null) {
             return null;
         }
@@ -107,7 +118,7 @@ public final class Imagenes {
         if (reducido != original) {
             reducido.recycle();
         }
-        return Base64.encodeToString(salida.toByteArray(), Base64.NO_WRAP);
+        return salida.toByteArray();
     }
 
     /**

@@ -105,9 +105,49 @@ public class DashboardFragment extends Fragment {
         ExtendedFloatingActionButton scanFab = view.findViewById(R.id.scanFab);
         scanFab.setOnClickListener(v ->
                 startActivity(new Intent(requireContext(), ScanProductActivity.class)));
+        ajustarMargenSobreBarraInferior(scanFab);
 
         MaterialToolbar toolbar = view.findViewById(R.id.toolbar);
         toolbar.setOnMenuItemClickListener(this::onOpcionDeMenu);
+    }
+
+    /**
+     * El FAB vivia con un {@code layout_marginBottom} fijo en XML (88dp)
+     * que asumia una altura constante para la {@code BottomNavigationView}
+     * del contenedor ({@code MainShellActivity}). Esa altura NO es
+     * constante: con {@code labelVisibilityMode="labeled"} depende de la
+     * escala de fuente y la densidad del dispositivo, y en varios
+     * emuladores/telefonos supera el margen fijo — el FAB queda dibujado
+     * detras de la barra inferior (que se pinta despues, y por tanto
+     * encima) y resulta invisible e inaccesible, aunque exista en el
+     * arbol de vistas con tamaño normal.
+     *
+     * <p>La correccion mide la altura REAL de la barra tras su propio
+     * layout (por eso el {@code post()}: en el momento de
+     * {@code onViewCreated} la Activity contenedora todavia no ha
+     * terminado de medirse) y fija el margen del FAB a esa altura mas el
+     * espaciado habitual, en vez de asumir un valor de un dispositivo de
+     * referencia.</p>
+     */
+    private void ajustarMargenSobreBarraInferior(@NonNull View fab) {
+        View bottomNav = requireActivity().findViewById(R.id.bottomNav);
+        if (bottomNav == null) {
+            return;
+        }
+        bottomNav.post(() -> {
+            if (getView() == null) {
+                // El fragmento pudo destruirse antes de que se ejecute
+                // este callback diferido.
+                return;
+            }
+            int alturaBarra = bottomNav.getHeight();
+            if (alturaBarra <= 0) {
+                return;
+            }
+            ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) fab.getLayoutParams();
+            params.bottomMargin = alturaBarra + getResources().getDimensionPixelSize(R.dimen.space_m);
+            fab.setLayoutParams(params);
+        });
     }
 
     private boolean onOpcionDeMenu(@NonNull android.view.MenuItem item) {

@@ -179,6 +179,15 @@
         escanear es la accion PRIMARIA de la pantalla: en M3 solo puede
         haber una accion asi por pantalla, y las secundarias (alta
         manual, estadisticas) viven en la toolbar.
+
+        El layout_marginBottom de aqui es solo un valor de partida para
+        el primer frame: DashboardFragment.ajustarMargenSobreBarraInferior()
+        lo sustituye en tiempo de ejecucion por la altura REAL medida de
+        la BottomNavigationView del contenedor, porque esa altura varia
+        con la densidad/escala de fuente del dispositivo y un numero fijo
+        aqui puede dejar el FAB dibujado detras de la barra inferior
+        (bug detectado: el valor anterior, 88dp, lo hacia en varios
+        dispositivos).
     -->
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/scanFab"

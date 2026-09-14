@@ -29,7 +29,7 @@ public final class RetrofitClient {
     // Studio, 10.0.2.2 apunta al localhost de tu propio ordenador — NO
     // a la red local — así que en emulador usarías
     // "http://10.0.2.2:8081/" en su lugar.
-    private static final String BASE_URL = "http://192.168.0.191:8081/";
+    private static final String BASE_URL = "http://192.168.0.192:8081/";
 
     private static Retrofit retrofit;
 

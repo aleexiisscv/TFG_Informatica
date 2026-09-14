@@ -12,10 +12,13 @@ import com.example.smartfridge.api.dto.RegisterRequest;
 import com.example.smartfridge.api.dto.RegistroDto;
 import com.example.smartfridge.api.dto.SensorDto;
 
+import okhttp3.MultipartBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
+import retrofit2.http.Multipart;
 import retrofit2.http.POST;
+import retrofit2.http.Part;
 import retrofit2.http.Query;
 
 /**
@@ -60,6 +63,21 @@ public interface SmartFridgeApi {
      */
     @POST("api/asistente/chat")
     Call<ChatResponseDto> chat(@Body ChatRequestDto peticion);
+
+    // --- Visión artificial (Fase 9/10): identificación de producto por fotografía ---
+    /**
+     * Sube la fotografía tomada en {@code ScanProductActivity} al mismo
+     * endpoint que ya consume el nodo de visión de la propia ESP32-CAM
+     * (ver {@code VisionController} en el backend). Si Gemini reconoce
+     * el producto, el servidor da de alta la unidad en el inventario en
+     * el mismo paso y responde 201 Created; si no lo reconoce responde
+     * 422, y si el identificador no existe en el catálogo responde 404.
+     * Ambos casos de error se resuelven en la Activity dejando caer el
+     * flujo al alta manual, sin necesidad de un segundo endpoint.
+     */
+    @Multipart
+    @POST("api/vision/analizar")
+    Call<InventarioDto> analizarImagen(@Part MultipartBody.Part imagen);
 
     // --- Autenticación — PENDIENTE: endpoint aún no implementado en el backend ---
     @POST("api/auth/login")
